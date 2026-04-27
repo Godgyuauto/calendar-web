@@ -1,0 +1,20 @@
+{
+  "createdAt": "2026-04-21T11:18:26Z",
+  "supabaseUrl": "https://pjzjezapmyhmykxanzlv.supabase.co",
+  "backupDir": "/Users/mingyulee/Downloads/Calendar_dev/calendar-web/backups/supabase_e2e_restore_20260421_201822",
+  "pageSize": 1000,
+  "tables": [
+    {
+      "table": "families",
+      "rows": 1
+    },
+    {
+      "table": "family_members",
+      "rows": 5
+    },
+    {
+      "table": "family_events",
+      "rows": 1
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "name": "calendar-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "build:turbopack": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typegen": "next typegen",
+    "typecheck": "next typegen && tsc --noEmit --incremental false",
+    "smoke": "bash ./scripts/smoke.sh",
+    "verify:release": "bash ./scripts/release-check.sh",
+    "verify:release:auth": "RELEASE_CHECK_REQUIRE_AUTH=1 bash ./scripts/release-check.sh",
+    "verify:release:auth:cleanup": "RELEASE_CHECK_REQUIRE_AUTH=1 RELEASE_CHECK_CLEANUP_AFTER_AUTH=1 RELEASE_CHECK_CLEANUP_APPLY=1 bash ./scripts/release-check.sh",
+    "verify:notify:queue": "bash ./scripts/verify-notify-queue.sh",
+    "verify:notify:e2e:dry": "bash ./scripts/verify-notify-e2e-dry.sh",
+    "token:test-user": "bash ./scripts/issue-test-token.sh",
+    "cleanup:test-data": "bash ./scripts/cleanup-test-data.sh",
+    "cleanup:test-data:apply": "CLEANUP_APPLY=1 CLEANUP_CONFIRM=DELETE_TEST_DATA bash ./scripts/cleanup-test-data.sh",
+    "backup:data": "bash ./scripts/backup-supabase.sh",
+    "restore:data": "bash ./scripts/restore-backup.sh",
+    "restore:data:apply": "RESTORE_APPLY=1 RESTORE_CONFIRM=RESTORE_BACKUP_DATA bash ./scripts/restore-backup.sh",
+    "logs:api": "bash ./scripts/query-api-logs.sh",
+    "logs:api:fail": "LOG_QUERY_OUTCOME=failure bash ./scripts/query-api-logs.sh",
+    "logs:api:lines": "LOG_QUERY_MODE=lines bash ./scripts/query-api-logs.sh"
+  },
+  "dependencies": {
+    "next": "16.2.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

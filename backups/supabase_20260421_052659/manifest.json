@@ -1,0 +1,32 @@
+{
+  "createdAt": "2026-04-20T20:27:01Z",
+  "supabaseUrl": "https://pjzjezapmyhmykxanzlv.supabase.co",
+  "backupDir": "/Users/mingyulee/Downloads/Calendar_dev/calendar-web/backups/supabase_20260421_052659",
+  "tables": [
+    {
+      "table": "families",
+      "rows": 1
+    },
+    {
+      "table": "family_members",
+      "rows": 3
+    },
+    {
+      "table": "shift_patterns",
+      "rows": 0
+    },
+    {
+      "table": "family_events",
+      "rows": 0
+    },
+    {
+      "table": "shift_overrides",
+      "rows": 0
+    },
+    {
+      "table": "agent_api_keys",
+      "rows": 0
+    }
+  ],
+  "tableFilter": ",families,family_members,shift_patterns,family_events,shift_overrides,agent_api_keys,"
+}

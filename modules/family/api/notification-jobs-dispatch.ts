@@ -1,0 +1,61 @@
+import type { ShiftOverride } from "@/modules/shift";
+import type { FamilyAuthContext } from "@/modules/family/api/auth-context";
+import {
+  logApiFailure,
+  type ApiLogScope,
+} from "@/modules/family/api/request-log";
+import {
+  queueNotificationForOverride,
+  removeQueuedNotificationsForOverride,
+} from "@/modules/family/api/notification-jobs-supabase";
+
+export async function dispatchQueuedNotificationForOverride(
+  scope: ApiLogScope,
+  auth: FamilyAuthContext,
+  createdOverride: ShiftOverride,
+): Promise<void> {
+  try {
+    const queueResult = await queueNotificationForOverride(auth, createdOverride);
+    if (!queueResult.queued && queueResult.reason === "MISSING_ID") {
+      logApiFailure(scope, {
+        status: 202,
+        errorCode: "NOTIFY_QUEUE_SKIP",
+        message: "override id is missing; notification queue skipped.",
+        familyId: auth.familyId,
+        userId: auth.userId,
+      });
+    }
+  } catch (queueError) {
+    logApiFailure(scope, {
+      status: 202,
+      errorCode: "NOTIFY_QUEUE_FAILED",
+      message:
+        queueError instanceof Error
+          ? queueError.message
+          : "Failed to queue override notification.",
+      familyId: auth.familyId,
+      userId: auth.userId,
+    });
+  }
+}
+
+export async function dispatchQueuedNotificationCleanupForOverride(
+  scope: ApiLogScope,
+  auth: FamilyAuthContext,
+  overrideId: string,
+): Promise<void> {
+  try {
+    await removeQueuedNotificationsForOverride(auth, overrideId);
+  } catch (queueError) {
+    logApiFailure(scope, {
+      status: 202,
+      errorCode: "NOTIFY_QUEUE_CLEANUP_FAILED",
+      message:
+        queueError instanceof Error
+          ? queueError.message
+          : "Failed to cleanup queued notifications.",
+      familyId: auth.familyId,
+      userId: auth.userId,
+    });
+  }
+}

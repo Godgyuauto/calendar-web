@@ -1,0 +1,52 @@
+[
+  {
+    "user_id": "53e7f414-d077-4c70-8e85-82c8b4300a97",
+    "data": {
+      "me": {
+        "name": "이민규",
+        "birth": "1998",
+        "goals": [],
+        "healthGoal": "",
+        "preferences": "",
+        "languageGoal": "none",
+        "shiftPattern": "4shift3",
+        "shiftRotation": {
+          "pattern": ["A","A","A","A","A","A","Off","Off","B","B","B","B","B","B","Off","Off","C","C","C","C","C","C","Off","Off"],
+          "cycleLength": 24,
+          "referenceDate": "2025-12-28",
+          "referenceIndex": 6
+        },
+        "commuteMinutes": 30
+      },
+      "spouse": {
+        "name": "전윤정",
+        "birth": "1999",
+        "employment": "homemaker",
+        "preferences": ""
+      },
+      "children": [
+        {
+          "id": "1766928449112",
+          "name": "이태오",
+          "type": "son",
+          "birth": "2024-01-10",
+          "school": "daycare",
+          "preferences": "",
+          "schoolHours": { "end": "16:00", "start": "09:00" }
+        },
+        {
+          "id": "1766928460861",
+          "name": "이서윤",
+          "type": "daughter",
+          "birth": "2025-05-29",
+          "school": "none",
+          "preferences": "",
+          "schoolHours": { "end": "", "start": "" }
+        }
+      ],
+      "priority": 3,
+      "customAreas": []
+    },
+    "updated_at": "2025-12-28T13:27:40.861+00:00"
+  }
+]

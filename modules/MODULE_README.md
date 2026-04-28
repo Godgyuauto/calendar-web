@@ -5,6 +5,7 @@
 - Domain logic and feature-level API handlers were moved under feature folders.
 - `app/*` files only re-export or compose these modules.
 - `push/` holds shared web-push client logic used by both home and settings.
+- `pwa/` holds the service-worker update helpers and cache-version source of truth.
 
 ## Why this structure was chosen
 

@@ -128,7 +128,8 @@ pnpm run build        # 프로덕션 빌드
 pnpm run lint         # ESLint 검사
 pnpm run typecheck    # 타입 생성 + 타입 검사 (순서 고정)
 pnpm run smoke        # 자동 중간점검 (UI/API 상태코드 점검)
-pnpm run verify:release      # 배포 전 고정 체크 루프 (lint->typecheck->build->smoke)
+pnpm run verify:pwa   # PWA 캐시 버전/Service Worker 업데이트 안전장치 검증
+pnpm run verify:release      # 배포 전 고정 체크 루프 (verify:pwa->test->lint->typecheck->build->smoke)
 pnpm run verify:release:auth # 인증 API 포함 배포 전 고정 체크 루프
 pnpm run verify:release:auth:cleanup # 인증 검증 + 테스트 계정/데이터 자동 정리
 pnpm run token:test-user     # 검증용 테스트 사용자 토큰 발급
@@ -192,5 +193,6 @@ style:, docs:, chore: 등
 Server Component 우선 사용
 Shift Engine은 순수 함수로 유지 (부작용 없음)
 모든 Supabase 쿼리는 RLS 정책 준수
-PWA 관련 코드는 app/layout.tsx와 public/sw.js 중심으로 관리
+PWA 관련 코드는 app/layout.tsx, app/sw-register.tsx, modules/pwa, public/sw.js 중심으로 관리
+UI shell/public asset/Service Worker 변경 시 modules/pwa/cache-version.ts와 public/sw.js의 cache version을 함께 올리고 pnpm run verify:pwa를 통과시킬 것
 주석은 영어로 작성 (필요 시 한국어 보조 설명)

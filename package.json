@@ -8,6 +8,7 @@
     "build:turbopack": "next build",
     "start": "next start",
     "test": "vitest run",
+    "verify:pwa": "node ./scripts/verify-pwa-update-safety.mjs",
     "lint": "eslint",
     "typegen": "next typegen",
     "typecheck": "next typegen && tsc --noEmit --incremental false",

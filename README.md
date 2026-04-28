@@ -48,10 +48,11 @@ pnpm run verify:release:auth
 pnpm run verify:release:auth:cleanup
 ```
 
-- 고정 순서: `lint -> typecheck -> build -> smoke`
+- 고정 순서: `verify:pwa -> test -> lint -> typecheck -> build -> smoke`
 - 스크립트가 로컬 서버를 자동 시작/종료하므로 점검 순서가 사람마다 달라지지 않음
 - `verify:release:auth`는 인증 API(`/api/events`, `/api/overrides`)까지 200 응답 검증
 - `verify:release:auth:cleanup`는 검증 후 테스트 계정/데이터 정리까지 자동 수행
+- `verify:pwa`는 Service Worker 캐시 버전 불일치와 업데이트 안전장치 제거를 차단
 
 ## 로그 기준
 
@@ -107,6 +108,14 @@ pnpm run logs:api:lines
   - `WEB_PUSH_VAPID_SUBJECT` (예: `mailto:you@example.com`)
 - DB에는 `supabase/migrations/20260422093000_add_push_subscriptions.sql` 적용이 필요합니다.
 
+## PWA 업데이트 안전장치
+
+- `public/sw.js`는 정적 Service Worker 파일이라 TypeScript 모듈을 직접 import할 수 없습니다.
+- 캐시 버전 기준값은 `modules/pwa/cache-version.ts`에 두고, `public/sw.js`의 `CACHE_VERSION`과 같은지 `pnpm run verify:pwa`가 검사합니다.
+- UI shell, route, public asset, Service Worker 동작을 바꾸면 `family-shift-vN` 값을 함께 올립니다.
+- `/sw.js`는 `next.config.ts`에서 `Cache-Control: no-store`로 내려 오래된 Service Worker 스크립트가 남지 않게 합니다.
+- `app/sw-register.tsx`는 새 Service Worker 발견 시 `skipWaiting`을 요청하고 `controllerchange`에서 한 번 reload합니다.
+
 ## 주요 파일
 
 - `app/page.tsx`: Home 페이지 엔트리(얇은 조립 파일)
@@ -117,6 +126,7 @@ pnpm run logs:api:lines
 - `modules/family/domain/{types,constants,validators,store-state,events,overrides}.ts`: 임시 인메모리 CRUD 저장소(모듈 분리, 향후 Supabase 대체 예정)
 - `modules/family/domain/family-store.ts`: family domain public barrel export
 - `modules/home/*`: Home UI 컴포넌트/데이터 조합 모듈
+- `modules/pwa/*`: PWA 캐시 버전 기준값과 Service Worker 업데이트 활성화 헬퍼
 - `modules/shift/api/*`, `modules/family/api/*`: API 핸들러 모듈
 - `**/README.md`, `**/MODULE_README.md`: 폴더별 역할/변경 경계/수정 이유 문서
 - `backups/lib_compat_removal_20260428/`: removed `lib/` compat shim backup (`*.bak`, restore reference only)

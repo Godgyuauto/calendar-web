@@ -1,4 +1,4 @@
-import { DayShiftSummary } from "@/lib/shift-engine";
+import { DayShiftSummary } from "@/modules/shift";
 
 export interface CalendarCell {
   date: string;

@@ -118,8 +118,8 @@ pnpm run logs:api:lines
 - `modules/family/domain/family-store.ts`: family domain public barrel export
 - `modules/home/*`: Home UI 컴포넌트/데이터 조합 모듈
 - `modules/shift/api/*`, `modules/family/api/*`: API 핸들러 모듈
-- `lib/*.ts`: 기존 import 호환용 re-export 레이어
 - `**/README.md`, `**/MODULE_README.md`: 폴더별 역할/변경 경계/수정 이유 문서
+- `backups/lib_compat_removal_20260428/`: removed `lib/` compat shim backup (`*.bak`, restore reference only)
 - `public/sw.js`: 오프라인 기본 캐시 Service Worker
 - `supabase/migrations/20260418215000_initial_schema.sql`: 스키마 + RLS 초안
 

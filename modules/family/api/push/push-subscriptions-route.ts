@@ -3,19 +3,19 @@ import {
   deleteOwnPushSubscription,
   type PushSubscriptionInput,
   upsertPushSubscription,
-} from "@/modules/family/api/push-subscriptions-repository";
-import { startApiLog } from "@/modules/family/api/request-log";
-import { resolveFamilyAuthOrResponseWithCookie } from "@/modules/family/api/route-auth";
+} from "./push-subscriptions-repository";
+import { startApiLog } from "../_common/request-log";
+import { resolveFamilyAuthOrResponseWithCookie } from "../_common/route-auth";
 import {
   classifyPushSubscriptionPayloadFailure,
   type PushFailure,
-} from "@/modules/family/api/push-failure";
+} from "./push-failure";
 import {
   responseForAuthFailure,
   responseForFailure,
   responseForNoContent,
   responseForSuccess,
-} from "@/modules/family/api/route-log-response";
+} from "../_common/route-log-response";
 
 function parsePushSubscriptionBody(body: unknown): PushSubscriptionInput | null {
   if (!body || typeof body !== "object") {

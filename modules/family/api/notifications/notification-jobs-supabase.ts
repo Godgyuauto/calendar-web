@@ -1,11 +1,11 @@
 import type { ShiftOverride } from "@/modules/shift";
-import type { FamilyAuthContext } from "@/modules/family/api/auth-context";
+import type { FamilyAuthContext } from "../_common/auth-context";
 import {
   assertSupabaseResponseOk,
   buildSupabaseHeaders,
   buildSupabaseUrl,
-} from "@/modules/family/api/family-supabase-common";
-import { buildStructuredOverrideNotificationBody } from "@/modules/family/api/structured-override-notification";
+} from "../_common/family-supabase-common";
+import { buildStructuredOverrideNotificationBody } from "../overrides/structured-override-notification";
 
 interface OverrideNoteLike {
   remind_at?: unknown;

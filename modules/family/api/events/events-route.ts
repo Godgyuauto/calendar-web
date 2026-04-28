@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { resolveFamilyAuthOrResponse } from "@/modules/family/api/route-auth";
+import { resolveFamilyAuthOrResponse } from "../_common/route-auth";
 import {
   createFamilyEventInSupabase,
   listFamilyEventsFromSupabase,
   removeFamilyEventInSupabase,
   updateFamilyEventInSupabase,
-} from "@/modules/family/api/family-events-supabase";
-import { getFamilyRepositoryFailure } from "@/modules/family/api/family-supabase-common";
-import { startApiLog } from "@/modules/family/api/request-log";
+} from "./family-events-supabase";
+import { getFamilyRepositoryFailure } from "../_common/family-supabase-common";
+import { startApiLog } from "../_common/request-log";
 import {
   logUnexpectedFailure,
   responseForAuthFailure,
   responseForFailure,
   responseForNoContent,
   responseForSuccess,
-} from "@/modules/family/api/route-log-response";
-import { dispatchFamilyPush } from "@/modules/family/api/push-notify-dispatch";
+} from "../_common/route-log-response";
+import { dispatchFamilyPush } from "../push/push-notify-dispatch";
 import { invalidateHomeFamilyCacheForFamily } from "@/modules/home/home-family-cache";
 
 export async function GET(request: NextRequest) {

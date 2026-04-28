@@ -1,4 +1,4 @@
-import type { FamilyAuthContext } from "@/modules/family/api/auth-context";
+import type { FamilyAuthContext } from "../_common/auth-context";
 import { readAccessTokenClaims } from "@/modules/auth/access-token-claims";
 
 export interface AuthProfileReadModel {

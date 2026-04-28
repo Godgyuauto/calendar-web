@@ -1,12 +1,12 @@
 import type { CreateShiftOverrideInput } from "@/modules/family";
-import type { FamilyAuthContext } from "@/modules/family/api/auth-context";
+import type { FamilyAuthContext } from "../_common/auth-context";
 import {
   assertSupabaseResponseOk,
   buildSupabaseHeaders,
   buildSupabaseUrl,
   FamilyRepositoryError,
   readJsonArray,
-} from "@/modules/family/api/family-supabase-common";
+} from "../_common/family-supabase-common";
 import { isISODateKey } from "@/modules/family/domain/validators";
 import type { ShiftOverride } from "@/modules/shift";
 

@@ -1,18 +1,18 @@
 import {
   getApiAuthFailure,
   resolveFamilyAuthContextFromToken,
-} from "@/modules/family/api/auth-context";
+} from "@/modules/family/api/_common";
 import {
   getFamilyAppRoleLabel,
   pickFamilyMasterUserId,
   resolveFamilyAppRole,
-} from "@/modules/family/api/family-member-role";
+} from "@/modules/family/api/members";
 import {
   listFamilyMembersFromSupabase,
-} from "@/modules/family/api/family-members-settings-supabase";
-import { readAuthProfileFromSupabase } from "@/modules/family/api/family-auth-profile-supabase";
-import { listShiftOverridesFromSupabase } from "@/modules/family/api/family-overrides-supabase";
-import { getFamilyRepositoryFailure } from "@/modules/family/api/family-supabase-common";
+} from "@/modules/family/api/members";
+import { readAuthProfileFromSupabase } from "@/modules/family/api/settings";
+import { listShiftOverridesFromSupabase } from "@/modules/family/api/overrides";
+import { getFamilyRepositoryFailure } from "@/modules/family/api/_common";
 import { getServerAccessTokenFromCookies } from "@/modules/home/access-token";
 import { toSeoulDateKey } from "@/modules/home/utils/date";
 import {

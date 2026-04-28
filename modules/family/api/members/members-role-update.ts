@@ -1,4 +1,4 @@
-import type { FamilyMemberDbRole } from "@/modules/family/api/family-members-role-repository";
+import type { FamilyMemberDbRole } from "./family-members-role-repository";
 
 interface UpdateMembersBody {
   targetUserId?: unknown;
@@ -41,4 +41,3 @@ export function parseRoleUpdate(
   }
   return { targetUserId: rawTargetUserId.trim(), role };
 }
-

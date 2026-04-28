@@ -1,17 +1,15 @@
-import type { FamilyAuthContext } from "@/modules/family/api/auth-context";
+import type { FamilyAuthContext } from "../_common/auth-context";
 
 interface SupabaseServiceConfig {
   url: string;
   serviceRoleKey: string;
 }
 
-interface FamilyMemberRoleRow {
+interface FamilyMemberWorkingRow {
   id: string;
 }
 
-export type FamilyMemberDbRole = "admin" | "editor";
-
-export class FamilyMembersRoleRepositoryError extends Error {
+export class FamilyMembersWorkingRepositoryError extends Error {
   readonly status: number;
 
   constructor(message: string, status: number) {
@@ -25,8 +23,8 @@ function getSupabaseServiceConfig(): SupabaseServiceConfig {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
   if (!url || !serviceRoleKey) {
-    throw new FamilyMembersRoleRepositoryError(
-      "Family members role repository is not configured. Set SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY.",
+    throw new FamilyMembersWorkingRepositoryError(
+      "Family members working repository is not configured. Set SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY.",
       503,
     );
   }
@@ -73,20 +71,23 @@ async function assertOk(response: Response, fallbackMessage: string): Promise<vo
   }
 
   const message = (await parseMessage(response)) ?? fallbackMessage;
+  const normalizedMessage = /working/i.test(message) &&
+    /(schema cache|column|does not exist)/i.test(message)
+    ? "family_members.working migration is not applied yet."
+    : message;
   const status = [400, 401, 403, 404, 409, 422].includes(response.status)
     ? response.status
     : 503;
-  throw new FamilyMembersRoleRepositoryError(message, status);
+  throw new FamilyMembersWorkingRepositoryError(normalizedMessage, status);
 }
 
-export async function updateFamilyMemberRoleFromSupabase(
+export async function updateOwnWorkingFromSupabase(
   auth: FamilyAuthContext,
-  targetUserId: string,
-  role: FamilyMemberDbRole,
+  working: boolean,
 ): Promise<void> {
   const query = new URLSearchParams({
     family_id: `eq.${auth.familyId}`,
-    user_id: `eq.${targetUserId}`,
+    user_id: `eq.${auth.userId}`,
     select: "id",
     limit: "1",
   }).toString();
@@ -94,23 +95,23 @@ export async function updateFamilyMemberRoleFromSupabase(
   const response = await fetch(buildServiceUrl(`/rest/v1/family_members?${query}`), {
     method: "PATCH",
     headers: buildServiceHeaders("return=representation"),
-    body: JSON.stringify({ role }),
+    body: JSON.stringify({ working }),
     cache: "no-store",
   });
 
-  await assertOk(response, "Failed to update member role.");
-  const rows = (await response.json().catch(() => [])) as FamilyMemberRoleRow[];
+  await assertOk(response, "Failed to update working status.");
+  const rows = (await response.json().catch(() => [])) as FamilyMemberWorkingRow[];
   if (!Array.isArray(rows) || rows.length === 0) {
-    throw new FamilyMembersRoleRepositoryError("Target family member not found.", 404);
+    throw new FamilyMembersWorkingRepositoryError("Family membership is required.", 403);
   }
 }
 
-export function getFamilyMembersRoleRepositoryFailure(
+export function getFamilyMembersWorkingRepositoryFailure(
   error: unknown,
 ): { message: string; status: number } | null {
-  if (error instanceof FamilyMembersRoleRepositoryError) {
+  if (error instanceof FamilyMembersWorkingRepositoryError) {
     return { message: error.message, status: error.status };
   }
+
   return null;
 }
-

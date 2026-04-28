@@ -1,4 +1,4 @@
-import type { FamilyAuthContext } from "@/modules/family/api/auth-context";
+import type { FamilyAuthContext } from "./auth-context";
 
 interface SupabaseConfig {
   url: string;

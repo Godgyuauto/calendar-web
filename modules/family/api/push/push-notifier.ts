@@ -2,14 +2,14 @@ import webpush, { type PushSubscription } from "web-push";
 import {
   deletePushSubscriptionByEndpoint,
   listFamilyPushSubscriptions,
-} from "@/modules/family/api/push-subscriptions-repository";
+} from "./push-subscriptions-repository";
 import {
   addPushFailureSummary,
   classifyPushPayload,
   classifyPushSendFailure,
   type PushFailure,
   type PushFailureSummary,
-} from "@/modules/family/api/push-failure";
+} from "./push-failure";
 
 interface PushConfig {
   publicKey: string;

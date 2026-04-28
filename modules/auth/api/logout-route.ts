@@ -1,5 +1,5 @@
-import { startApiLog } from "@/modules/family/api/request-log";
-import { responseForNoContent } from "@/modules/family/api/route-log-response";
+import { startApiLog } from "@/modules/family/api/_common";
+import { responseForNoContent } from "@/modules/family/api/_common";
 import { clearAccessTokenCookies } from "@/modules/auth/api/auth-cookie";
 
 function clearSessionCookieAndRespond(method: "POST" | "DELETE") {

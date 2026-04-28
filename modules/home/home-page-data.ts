@@ -3,11 +3,11 @@ import type { FamilyEvent } from "@/modules/family";
 import {
   getApiAuthFailure,
   resolveFamilyAuthContextFromToken,
-} from "@/modules/family/api/auth-context";
-import { readAuthProfileFromSupabase } from "@/modules/family/api/family-auth-profile-supabase";
-import { listFamilyEventsFromSupabase } from "@/modules/family/api/family-events-supabase";
-import { listShiftOverridesFromSupabase } from "@/modules/family/api/family-overrides-supabase";
-import { getFamilyRepositoryFailure } from "@/modules/family/api/family-supabase-common";
+} from "@/modules/family/api/_common";
+import { readAuthProfileFromSupabase } from "@/modules/family/api/settings";
+import { listFamilyEventsFromSupabase } from "@/modules/family/api/events";
+import { listShiftOverridesFromSupabase } from "@/modules/family/api/overrides";
+import { getFamilyRepositoryFailure } from "@/modules/family/api/_common";
 import {
   DEFAULT_SHIFT_PATTERN_V1,
   DayShiftSummary,

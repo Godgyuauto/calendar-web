@@ -4,7 +4,7 @@ import {
   getApiAuthFailure,
   resolveFamilyAuthContext,
   resolveFamilyAuthContextFromToken,
-} from "@/modules/family/api/auth-context";
+} from "./auth-context";
 import { getServerAccessTokenFromCookies } from "@/modules/home/access-token";
 
 async function runAuthOrResponse(

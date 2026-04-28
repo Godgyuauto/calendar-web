@@ -2,27 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getFamilyMembersRoleRepositoryFailure,
   updateFamilyMemberRoleFromSupabase,
-} from "@/modules/family/api/family-members-role-repository";
+} from "./family-members-role-repository";
 import {
   getFamilyMembersWorkingRepositoryFailure,
   updateOwnWorkingFromSupabase,
-} from "@/modules/family/api/family-members-working-repository";
+} from "./family-members-working-repository";
 import {
   pickFamilyMasterUserId,
   resolveFamilyAppRole,
-} from "@/modules/family/api/family-member-role";
-import { parseRoleUpdate } from "@/modules/family/api/members-role-update";
-import { listFamilyMembersFromSupabase } from "@/modules/family/api/family-members-settings-supabase";
-import { getFamilyRepositoryFailure } from "@/modules/family/api/family-supabase-common";
-import { startApiLog } from "@/modules/family/api/request-log";
-import { resolveFamilyAuthOrResponseWithCookie } from "@/modules/family/api/route-auth";
+} from "./family-member-role";
+import { parseRoleUpdate } from "./members-role-update";
+import { listFamilyMembersFromSupabase } from "./family-members-settings-supabase";
+import { getFamilyRepositoryFailure } from "../_common/family-supabase-common";
+import { startApiLog } from "../_common/request-log";
+import { resolveFamilyAuthOrResponseWithCookie } from "../_common/route-auth";
 import {
   logUnexpectedFailure,
   responseForAuthFailure,
   responseForFailure,
   responseForNoContent,
   responseForSuccess,
-} from "@/modules/family/api/route-log-response";
+} from "../_common/route-log-response";
 
 export async function GET(request: NextRequest) {
   const logScope = startApiLog("/api/members", "GET");

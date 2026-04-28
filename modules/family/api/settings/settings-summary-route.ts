@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readAuthProfileFromSupabase } from "@/modules/family/api/family-auth-profile-supabase";
+import { readAuthProfileFromSupabase } from "./family-auth-profile-supabase";
 import {
   listFamilyMembersFromSupabase,
   readActiveShiftPatternFromSupabase,
   readFamilyNameFromSupabase,
   readOwnPushSubscriptionExistsFromSupabase,
-} from "@/modules/family/api/family-members-settings-supabase";
-import { getFamilyRepositoryFailure } from "@/modules/family/api/family-supabase-common";
-import { startApiLog } from "@/modules/family/api/request-log";
-import { resolveFamilyAuthOrResponseWithCookie } from "@/modules/family/api/route-auth";
+} from "../members/family-members-settings-supabase";
+import { getFamilyRepositoryFailure } from "../_common/family-supabase-common";
+import { startApiLog } from "../_common/request-log";
+import { resolveFamilyAuthOrResponseWithCookie } from "../_common/route-auth";
 import {
   logUnexpectedFailure,
   responseForAuthFailure,
   responseForFailure,
   responseForSuccess,
-} from "@/modules/family/api/route-log-response";
+} from "../_common/route-log-response";
 import { DEFAULT_SHIFT_PATTERN_V1 } from "@/modules/shift";
 
 export async function GET(request: NextRequest) {

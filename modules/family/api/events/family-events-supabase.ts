@@ -3,14 +3,14 @@ import type {
   FamilyEvent,
   UpdateFamilyEventInput,
 } from "@/modules/family";
-import type { FamilyAuthContext } from "@/modules/family/api/auth-context";
+import type { FamilyAuthContext } from "../_common/auth-context";
 import {
   assertSupabaseResponseOk,
   buildSupabaseHeaders,
   buildSupabaseUrl,
   FamilyRepositoryError,
   readJsonArray,
-} from "@/modules/family/api/family-supabase-common";
+} from "../_common/family-supabase-common";
 import { validateEventWindow } from "@/modules/family/domain/validators";
 
 interface FamilyEventRow {

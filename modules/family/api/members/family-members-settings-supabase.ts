@@ -1,11 +1,11 @@
-import type { FamilyAuthContext } from "@/modules/family/api/auth-context";
+import type { FamilyAuthContext } from "../_common/auth-context";
 import {
   FamilyRepositoryError,
   assertSupabaseResponseOk,
   buildSupabaseHeaders,
   buildSupabaseUrl,
   readJsonArray,
-} from "@/modules/family/api/family-supabase-common";
+} from "../_common/family-supabase-common";
 
 export type FamilyMemberRole = "admin" | "editor";
 

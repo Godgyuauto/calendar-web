@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { type ApiLogScope, logApiFailure, logApiSuccess } from "@/modules/family/api/request-log";
+import { type ApiLogScope, logApiFailure, logApiSuccess } from "./request-log";
 
 export interface RouteLogMeta {
   familyId?: string;

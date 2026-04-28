@@ -67,8 +67,8 @@ calendar-web/
 │   ├── layout.tsx
 │   ├── page.tsx                    # 3줄 — `HomePage` import만
 │   └── api/
-│       ├── events/route.ts         # 1줄 — `@/modules/family/api/events-route` re-export
-│       ├── overrides/route.ts      # 1줄 — `@/modules/family/api/overrides-route` re-export
+│       ├── events/route.ts         # 1줄 — `@/modules/family/api/events` re-export
+│       ├── overrides/route.ts      # 1줄 — `@/modules/family/api/overrides` re-export
 │       └── shifts/{today,month}/route.ts  # 1줄 re-export
 ├── modules/                        # 도메인 모듈 (핵심 로직은 모두 여기)
 │   ├── shift/                      # 교대근무 엔진 (순수 함수)
@@ -76,7 +76,7 @@ calendar-web/
 │   │   └── api/{today,month}-route.ts
 │   ├── family/                     # 가족 일정 / override 저장
 │   │   ├── domain/{types,constants,validators,store-state,events,overrides,family-store}.ts
-│   │   └── api/{events,overrides}-route.ts
+│   │   └── api/{_common,events,overrides,members,push,notifications,settings}/
 │   ├── calendar/                   # 월간 달력 그리드 빌더 (순수 함수)
 │   │   └── domain/
 │   └── home/                       # 홈 화면 UI 조립

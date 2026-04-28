@@ -1,1 +1,1 @@
-export { GET, PATCH } from "@/modules/family/api/members-route";
+export { GET, PATCH } from "@/modules/family/api/members";

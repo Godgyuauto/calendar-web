@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
-import { startApiLog } from "@/modules/family/api/request-log";
-import { responseForFailure, responseForNoContent } from "@/modules/family/api/route-log-response";
+import { startApiLog } from "@/modules/family/api/_common";
+import { responseForFailure, responseForNoContent } from "@/modules/family/api/_common";
 import { setAccessTokenCookie, setRefreshTokenCookie } from "@/modules/auth/api/auth-cookie";
 import {
   asNonEmptyString,

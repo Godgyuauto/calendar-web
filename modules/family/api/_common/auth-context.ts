@@ -6,7 +6,7 @@ import {
 import {
   readCachedAuthContext,
   writeCachedAuthContext,
-} from "@/modules/family/api/auth-context-cache";
+} from "./auth-context-cache";
 
 const AUTHORIZATION_HEADER = "authorization";
 const FAMILY_ID_HEADER = "x-family-id";

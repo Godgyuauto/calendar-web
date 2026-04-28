@@ -40,13 +40,16 @@ function toShiftOverride(row: ShiftOverrideRow): ShiftOverride {
 
 export async function listShiftOverridesFromSupabase(
   auth: FamilyAuthContext,
-  input?: { year?: number; month?: number },
+  input?: { year?: number; month?: number; scope?: "family" | "mine" },
 ): Promise<ShiftOverride[]> {
   const query = new URLSearchParams({
     select: "id,user_id,date,override_type,override_shift,label,start_time,end_time,note,created_at",
     family_id: `eq.${auth.familyId}`,
     order: "date.asc",
   });
+  if (input?.scope === "mine") {
+    query.set("user_id", `eq.${auth.userId}`);
+  }
   if (input?.year && input?.month) {
     const start = `${input.year}-${String(input.month).padStart(2, "0")}-01`;
     const last = new Date(Date.UTC(input.year, input.month, 0)).getUTCDate();
@@ -63,6 +66,10 @@ export async function listShiftOverridesFromSupabase(
   await assertSupabaseResponseOk(response, "Failed to list shift overrides.");
   const rows = await readJsonArray<ShiftOverrideRow>(response);
   return rows.map(toShiftOverride);
+}
+
+interface UpdateShiftOverrideInput extends CreateShiftOverrideInput {
+  id: string;
 }
 
 export async function createShiftOverrideInSupabase(
@@ -98,6 +105,44 @@ export async function createShiftOverrideInSupabase(
   return toShiftOverride(rows[0]);
 }
 
+export async function updateShiftOverrideInSupabase(
+  auth: FamilyAuthContext,
+  input: UpdateShiftOverrideInput,
+): Promise<ShiftOverride | null> {
+  if (!isISODateKey(input.date)) {
+    throw new FamilyRepositoryError("date must be in YYYY-MM-DD format.", 400);
+  }
+
+  const query = new URLSearchParams({
+    id: `eq.${input.id}`,
+    family_id: `eq.${auth.familyId}`,
+    user_id: `eq.${auth.userId}`,
+    select: "id,user_id,date,override_type,override_shift,label,start_time,end_time,note,created_at",
+  });
+
+  const response = await fetch(buildSupabaseUrl(`/rest/v1/shift_overrides?${query.toString()}`), {
+    method: "PATCH",
+    headers: buildSupabaseHeaders(auth, "return=representation"),
+    body: JSON.stringify({
+      date: input.date,
+      override_type: input.overrideType,
+      override_shift: input.overrideShift,
+      label: input.label.trim(),
+      start_time: input.startTime ?? null,
+      end_time: input.endTime ?? null,
+      note: input.note ?? null,
+    }),
+    cache: "no-store",
+  });
+  await assertSupabaseResponseOk(response, "Failed to update shift override.");
+  const rows = await readJsonArray<ShiftOverrideRow>(response);
+  if (rows.length === 0) {
+    return null;
+  }
+
+  return toShiftOverride(rows[0]);
+}
+
 export async function removeShiftOverrideInSupabase(
   auth: FamilyAuthContext,
   id: string,
@@ -105,6 +150,7 @@ export async function removeShiftOverrideInSupabase(
   const query = new URLSearchParams({
     id: `eq.${id}`,
     family_id: `eq.${auth.familyId}`,
+    user_id: `eq.${auth.userId}`,
     select: "id",
   });
   const response = await fetch(buildSupabaseUrl(`/rest/v1/shift_overrides?${query.toString()}`), {

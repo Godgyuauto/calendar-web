@@ -168,7 +168,8 @@ Event(`family_events`) → 부가 일정 표시/기록 용도 (근무 계산 SoT
 REST API (현재):
 - `/api/shifts/today` (GET), `/api/shifts/month` (GET)
 - `/api/events` (GET · POST · PATCH · DELETE) — Supabase repository 경유, `Authorization: Bearer <token>` 필수 (부가 일정)
-- `/api/overrides` (GET · POST · DELETE) — Supabase repository 경유, `Authorization: Bearer <token>` 필수 (근무/알림 SoT)
+- `/api/overrides` (GET · POST · PATCH · DELETE) — Supabase repository 경유, `Authorization: Bearer <token>` 필수 (근무/알림 SoT). `GET ?scope=mine`으로 본인 일정만 조회 가능. PATCH/DELETE는 owner만 허용.
+- `/api/members` (GET · PATCH) — `Authorization: Bearer <token>` 필수. PATCH는 두 모드: ① 본인 `working` 토글 ② 가족마스터의 다른 멤버 `role` 변경(가족장 부여/회수). 역할 라벨은 `가족마스터/가족장/가족원` (DB role: `admin/editor` + `created_at` 기반 해석).
 핸들러 실체는 `modules/{shift,family}/api/*-route.ts`. `app/api/**/route.ts`는 1줄 re-export만 유지.
 
 홈 서버 데이터(`modules/home/home-page-data.ts`)는 Supabase repository read 경로로 통일됨. 서버 쿠키에서 access token이 확인되면 family scope 데이터(events/overrides)를 로드하고, 토큰이 없거나 인증 실패면 빈 데이터로 안전 fallback한다.

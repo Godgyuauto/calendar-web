@@ -3,6 +3,11 @@ import {
   resolveFamilyAuthContextFromToken,
 } from "@/modules/family/api/auth-context";
 import {
+  getFamilyAppRoleLabel,
+  pickFamilyMasterUserId,
+  resolveFamilyAppRole,
+} from "@/modules/family/api/family-member-role";
+import {
   listFamilyMembersFromSupabase,
   readActiveShiftPatternFromSupabase,
   readFamilyNameFromSupabase,
@@ -86,6 +91,7 @@ export async function getSettingsPageData(): Promise<SettingsPageData> {
       ]);
 
     const self = members.find((member) => member.userId === auth.userId);
+    const familyMasterUserId = pickFamilyMasterUserId(members);
     const resolvedPattern = activePattern ?? {
       patternId: DEFAULT_SHIFT_PATTERN_V1.patternId,
       version: DEFAULT_SHIFT_PATTERN_V1.version,
@@ -96,7 +102,9 @@ export async function getSettingsPageData(): Promise<SettingsPageData> {
       isConnected: true,
       profileName: profile.displayName ?? "나",
       profileEmail: profile.email ?? "이메일 정보 없음",
-      profileRoleLabel: self?.role === "admin" ? "관리자" : "멤버",
+      profileRoleLabel: self
+        ? getFamilyAppRoleLabel(resolveFamilyAppRole(self, familyMasterUserId))
+        : "가족원",
       selfWorking: self?.working ?? true,
       familyName: familyName ?? "이름 없는 가족",
       shiftPatternLabel: formatPatternLabel(

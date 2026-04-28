@@ -3,6 +3,11 @@ import {
   resolveFamilyAuthContextFromToken,
 } from "@/modules/family/api/auth-context";
 import {
+  getFamilyAppRoleLabel,
+  pickFamilyMasterUserId,
+  resolveFamilyAppRole,
+} from "@/modules/family/api/family-member-role";
+import {
   listFamilyMembersFromSupabase,
 } from "@/modules/family/api/family-members-settings-supabase";
 import { readAuthProfileFromSupabase } from "@/modules/family/api/family-auth-profile-supabase";
@@ -63,10 +68,6 @@ function getAvatarColor(userId: string): string {
     .split("")
     .reduce((acc, char) => (acc + char.charCodeAt(0)) % AVATAR_COLORS.length, 0);
   return AVATAR_COLORS[hash];
-}
-
-function getRoleLabel(role: "admin" | "editor"): string {
-  return role === "admin" ? "관리자" : "멤버";
 }
 
 function getMemberDisplayName(
@@ -138,14 +139,18 @@ export async function getMembersPageData(now: Date = new Date()): Promise<Member
       readAuthProfileFromSupabase(auth),
       listWeekOverrides(auth, weekDateKeys),
     ]);
+    const familyMasterUserId = pickFamilyMasterUserId(members);
 
     const rows: MemberRow[] = members.map((member) => {
       const working = member.working;
+      const roleLabel = getFamilyAppRoleLabel(
+        resolveFamilyAppRole(member, familyMasterUserId),
+      );
       if (!working) {
         return {
           id: member.id,
           name: getMemberDisplayName(member.userId, auth.userId, profile.displayName),
-          roleLabel: getRoleLabel(member.role),
+          roleLabel,
           avatarColor: getAvatarColor(member.userId),
           working,
         };
@@ -167,7 +172,7 @@ export async function getMembersPageData(now: Date = new Date()): Promise<Member
       return {
         id: member.id,
         name: getMemberDisplayName(member.userId, auth.userId, profile.displayName),
-        roleLabel: getRoleLabel(member.role),
+        roleLabel,
         avatarColor: getAvatarColor(member.userId),
         working,
         todayShift,

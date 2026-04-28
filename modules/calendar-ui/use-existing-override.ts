@@ -63,11 +63,14 @@ export function useExistingOverride({
       // Clear previous-day selection immediately so the sheet never reuses stale detail.
       setExistingOverride(null);
       try {
-        const response = await fetch(`/api/overrides?year=${year}&month=${month}`, {
+        const response = await fetch(
+          `/api/overrides?year=${year}&month=${month}&scope=mine`,
+          {
           method: "GET",
           credentials: "include",
           cache: "no-store",
-        });
+          },
+        );
         if (!response.ok) {
           if (!canceled) {
             setExistingError("기존 일정을 불러오지 못했습니다.");

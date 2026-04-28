@@ -9,7 +9,7 @@ interface AddEventSheetEditorProps {
   initialForm: StructuredOverrideFormState;
   saving: boolean;
   error: string | null;
-  hasExistingOverride: boolean;
+  submitLabel: string;
   onSubmit: (form: StructuredOverrideFormState) => void;
 }
 
@@ -17,7 +17,7 @@ export function AddEventSheetEditor({
   initialForm,
   saving,
   error,
-  hasExistingOverride,
+  submitLabel,
   onSubmit,
 }: AddEventSheetEditorProps) {
   const [form, setForm] = useState<StructuredOverrideFormState>(initialForm);
@@ -31,7 +31,7 @@ export function AddEventSheetEditor({
         </p>
       ) : null}
       <PrimaryButton onClick={() => onSubmit(form)} disabled={saving} className="mt-5">
-        {saving ? "저장 중..." : hasExistingOverride ? "수정 저장" : "저장"}
+        {saving ? "저장 중..." : submitLabel}
       </PrimaryButton>
     </>
   );

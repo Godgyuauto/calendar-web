@@ -18,9 +18,12 @@
 - `AddEventSheet.tsx` — `"use client"`. BottomSheet + 탭(`등록된 일정`/`일정 추가하기`) +
   일정 유형 chip grid + 근무조 변경 row + 구조화 입력(start_at/end_at/remind_at/title/memo) + 저장.
   시간 입력 UI는 `HH:mm`로 받고, 저장 시 `YYYY-MM-DDTHH:mm`로 직렬화해 API payload로 보낸다.
-  시트 진입 시 `GET /api/overrides`로 해당 날짜 기존 일정을 먼저 노출하고,
-  저장은 `POST /api/overrides`로 처리한다.
-- `AddEventSheetSections.tsx` — 시트 내부 섹션 프레젠테이션(기존 일정 요약 / 구조화 입력 필드).
+  시트 진입 시 `GET /api/overrides?scope=mine`로 해당 날짜 기존 일정을 먼저 노출하고,
+  등록은 `POST /api/overrides`, 수정은 `PATCH /api/overrides`, 삭제는 `DELETE /api/overrides?id=...`로 처리한다.
+- `AddEventSheetSections.tsx` — 섹션 barrel export.
+- `ExistingOverrideSection.tsx` — 등록된 일정 요약 + 수정/삭제 액션 UI.
+- `StructuredFieldsSection.tsx` — 일정 추가/수정 입력 필드 UI.
+- `add-event-sheet-utils.ts` — 시트 날짜 라벨/시간 범위 검증 유틸.
 - `structured-override.ts` — 프론트 전용 payload 타입 + form/view 매핑. 구조화 필드를
   `note` JSON(`schema=calendar_override_v1`)으로 직렬화/역직렬화한다.
 - `structured-override-note.ts` — note datetime 정규화 유틸 + `modules/family/domain/structured-override-note.ts` 단일 파서 wrapper.

@@ -13,6 +13,10 @@ import {
   type StructuredOverrideFormState,
 } from "@/modules/calendar-ui/structured-override";
 import {
+  formatKoreanDate,
+  getTimeRangeError,
+} from "@/modules/calendar-ui/add-event-sheet-utils";
+import {
   BottomSheet,
   CalendarIcon,
   CloseIcon,
@@ -22,51 +26,10 @@ interface AddEventSheetProps {
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
-  // Default ISO date (YYYY-MM-DD) shown in the header.
   defaultDate: string;
   initialTab: "existing" | "create";
 }
 
-function formatKoreanDate(dateKey: string): string {
-  const [y, m, d] = dateKey.split("-").map(Number);
-  const date = new Date(Date.UTC(y, (m ?? 1) - 1, d ?? 1));
-  return new Intl.DateTimeFormat("ko-KR", {
-    month: "long",
-    day: "numeric",
-    weekday: "short",
-    timeZone: "Asia/Seoul",
-  }).format(date);
-}
-
-function isDateTimeRangeInvalid(dateKey: string, startAt: string, endAt: string): boolean {
-  const startUnix = new Date(`${dateKey}T${startAt}`).getTime();
-  const endUnix = new Date(`${dateKey}T${endAt}`).getTime();
-  if (Number.isNaN(startUnix) || Number.isNaN(endUnix)) {
-    return true;
-  }
-
-  return endUnix <= startUnix;
-}
-
-function getTimeRangeError(
-  dateKey: string,
-  form: StructuredOverrideFormState,
-): string | null {
-  const hasStartAt = form.startAt.trim().length > 0;
-  const hasEndAt = form.endAt.trim().length > 0;
-  if (!hasStartAt && !hasEndAt) {
-    return null;
-  }
-  if (hasStartAt !== hasEndAt) {
-    return "시작/종료 시간을 함께 입력해주세요.";
-  }
-  return isDateTimeRangeInvalid(dateKey, form.startAt, form.endAt)
-    ? "시작/종료 시간을 확인해주세요."
-    : null;
-}
-
-// Bottom sheet for adding/editing an override entry on the selected date.
-// Submits structured fields via /api/overrides payload + note JSON metadata.
 export function AddEventSheet({
   open,
   onClose,
@@ -76,8 +39,10 @@ export function AddEventSheet({
 }: AddEventSheetProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"existing" | "create">(initialTab);
+  const [submitMode, setSubmitMode] = useState<"create" | "update">("create");
   const { existingOverride, existingLoading, existingError } = useExistingOverride({
     open,
     dateKey: defaultDate,
@@ -94,18 +59,20 @@ export function AddEventSheet({
       setError(timeError);
       return;
     }
-
     const payload = toOverrideSubmitPayload(defaultDate, form);
+    const shouldUpdate = submitMode === "update" && Boolean(existingOverride?.id);
     setSaving(true);
     setError(null);
     try {
       const response = await fetch("/api/overrides", {
-        method: "POST",
-        // Route auth supports cookie-token fallback for browser-originated
-        // requests, so the sheet can save without manually injecting headers.
+        method: shouldUpdate ? "PATCH" : "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(
+          shouldUpdate && existingOverride
+            ? { ...payload, id: existingOverride.id }
+            : payload,
+        ),
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: string };
@@ -118,6 +85,31 @@ export function AddEventSheet({
       setError("네트워크 오류가 발생했습니다.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const deleteExisting = async () => {
+    if (!existingOverride) {
+      return;
+    }
+    setDeleting(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/overrides?id=${encodeURIComponent(existingOverride.id)}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: string };
+        setError(body.error ?? "삭제에 실패했습니다.");
+        return;
+      }
+      onSaved();
+      router.refresh();
+    } catch {
+      setError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -144,7 +136,10 @@ export function AddEventSheet({
         <nav className="mb-3 flex border-b border-[#e5e5ea]">
           <button
             type="button"
-            onClick={() => setActiveTab("existing")}
+            onClick={() => {
+              setActiveTab("existing");
+              setError(null);
+            }}
             className={`flex-1 pb-2 text-[16px] font-semibold ${
               activeTab === "existing"
                 ? "border-b-2 border-[#007AFF] text-[#007AFF]"
@@ -155,7 +150,11 @@ export function AddEventSheet({
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab("create")}
+            onClick={() => {
+              setActiveTab("create");
+              setSubmitMode("create");
+              setError(null);
+            }}
             className={`flex-1 pb-2 text-[16px] font-semibold ${
               activeTab === "create"
                 ? "border-b-2 border-[#007AFF] text-[#007AFF]"
@@ -171,16 +170,26 @@ export function AddEventSheet({
             existingLoading={existingLoading}
             existingOverride={existingOverride}
             existingError={existingError}
-            onSwitchToCreate={() => setActiveTab("create")}
+            onSwitchToCreate={() => {
+              setActiveTab("create");
+              setSubmitMode("create");
+              setError(null);
+            }}
+            onEditExisting={() => {
+              setActiveTab("create");
+              setSubmitMode("update");
+              setError(null);
+            }}
+            onDeleteExisting={deleteExisting}
+            deletingExisting={deleting}
           />
         ) : (
-          // Keyed remount keeps form-state aligned with day-tap target without effect resets.
           <AddEventSheetEditor
             key={formSeedKey}
             initialForm={formSeed}
             saving={saving}
             error={error}
-            hasExistingOverride={Boolean(existingOverride)}
+            submitLabel={submitMode === "update" ? "수정 저장" : "저장"}
             onSubmit={submit}
           />
         )}

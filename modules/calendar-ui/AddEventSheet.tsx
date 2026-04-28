@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AddEventSheetEditor } from "@/modules/calendar-ui/AddEventSheetEditor";
+import { AddEventSheetHeader } from "@/modules/calendar-ui/AddEventSheetHeader";
+import {
+  AddEventSheetTabs,
+  type AddEventSheetTab,
+} from "@/modules/calendar-ui/AddEventSheetTabs";
 import { useExistingOverride } from "@/modules/calendar-ui/use-existing-override";
 import {
   ExistingOverrideSection,
@@ -18,8 +23,6 @@ import {
 } from "@/modules/calendar-ui/add-event-sheet-utils";
 import {
   BottomSheet,
-  CalendarIcon,
-  CloseIcon,
 } from "@/modules/ui/components";
 
 interface AddEventSheetProps {
@@ -41,7 +44,7 @@ export function AddEventSheet({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"existing" | "create">(initialTab);
+  const [activeTab, setActiveTab] = useState<AddEventSheetTab>(initialTab);
   const [submitMode, setSubmitMode] = useState<"create" | "update">("create");
   const { existingOverride, existingLoading, existingError } = useExistingOverride({
     open,
@@ -113,57 +116,20 @@ export function AddEventSheet({
     }
   };
 
+  const selectTab = (tab: AddEventSheetTab) => {
+    setActiveTab(tab);
+    if (tab === "create") {
+      setSubmitMode("create");
+    }
+    setError(null);
+  };
+
   return (
     <BottomSheet open={open} onClose={onClose} ariaLabel="일정 상세 및 추가">
-      <header className="flex items-center justify-between px-5 pb-3">
-        <div className="flex items-center gap-2 text-[15px] font-semibold text-[#1a1a1a]">
-          <span className="text-[#007AFF]">
-            <CalendarIcon size={18} />
-          </span>
-          <span>{formatKoreanDate(defaultDate)}</span>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="닫기"
-          className="text-[#8e8e93]"
-        >
-          <CloseIcon size={20} />
-        </button>
-      </header>
+      <AddEventSheetHeader label={formatKoreanDate(defaultDate)} onClose={onClose} />
 
       <div className="px-5">
-        <nav className="mb-3 flex border-b border-[#e5e5ea]">
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab("existing");
-              setError(null);
-            }}
-            className={`flex-1 pb-2 text-[16px] font-semibold ${
-              activeTab === "existing"
-                ? "border-b-2 border-[#007AFF] text-[#007AFF]"
-                : "text-[#8e8e93]"
-            }`}
-          >
-            등록된 일정
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab("create");
-              setSubmitMode("create");
-              setError(null);
-            }}
-            className={`flex-1 pb-2 text-[16px] font-semibold ${
-              activeTab === "create"
-                ? "border-b-2 border-[#007AFF] text-[#007AFF]"
-                : "text-[#8e8e93]"
-            }`}
-          >
-            일정 추가하기
-          </button>
-        </nav>
+        <AddEventSheetTabs activeTab={activeTab} onSelect={selectTab} />
 
         {activeTab === "existing" ? (
           <ExistingOverrideSection

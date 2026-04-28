@@ -9,6 +9,8 @@
 - `use-push-subscription-controller.ts`
   - `usePushSubscriptionController({ initialSubscribed, enabled })`
   - 반환: `checked`, `disabled`, `busy`, `permission`, `description`, `onChange`
+- `push-subscription-actions.ts`
+  - 권한 요청, pushManager 구독/해지, `/api/push/subscriptions` POST/DELETE
 - `push-subscription-utils.ts`
   - 지원 환경 확인 / VAPID key decode / 현재 subscription 조회 / 에러 메시지 파싱
 

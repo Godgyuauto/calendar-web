@@ -2,7 +2,7 @@
 
 ## Files
 
-- `_common/`: auth context resolution, route auth adapters, shared logging/response helpers, and Supabase REST helpers.
+- `_common/`: auth context resolution (token/request/membership split), route auth adapters, shared logging/response helpers, and Supabase REST helpers.
 - `events/`: `/api/events` route and `family_events` repository CRUD.
 - `overrides/`: `/api/overrides` route, create/update mutation branch, payload validation, `shift_overrides` repository, and structured notification payload builder.
 - `members/`: `/api/members` route, member role/working repositories, settings read repository, app-role resolver, and PATCH body parser.

@@ -16,7 +16,8 @@
   - settings import 경로를 유지하면서 공용 push lifecycle을 재사용
 - `working-toggle-controller.ts` — 근무자 여부 토글 제어 로직.
   - `/api/members` PATCH로 본인 `family_members.working` 저장
-- `SettingsPageClient.tsx` — UI 렌더 + 로그아웃 버튼 + push 토글 연결.
+- `SettingsPageClient.tsx` — client state/action 연결 + 섹션 조립.
+- `SettingsPageSections.tsx` — 프로필/가족/근무/알림/로그아웃 섹션 UI.
 
 ## 현재 동작 범위
 

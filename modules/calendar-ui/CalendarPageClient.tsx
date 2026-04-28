@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { CalendarCell } from "@/modules/calendar";
 import { AddEventSheet } from "@/modules/calendar-ui/AddEventSheet";
+import { MonthGrid } from "@/modules/calendar-ui/MonthGrid";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -18,12 +20,13 @@ interface CalendarPageClientProps {
   activeYear: number;
   activeMonth: number;
   todayKey: string;
-  children: React.ReactNode;
+  calendarCells: CalendarCell[];
+  initialSelectedDateKey?: string;
 }
 
-// Client wrapper around the server-rendered month grid.
+// Client wrapper around the month grid.
 // Owns: view-mode segment state, month navigation links, and AddEventSheet state.
-// The sheet opens either from FAB (local state) or from `?add=YYYY-MM-DD` query.
+// Day taps open the sheet locally; `?add=YYYY-MM-DD` remains an initial deep link.
 const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function offsetMonth(year: number, month: number, offset: number): { year: number; month: number } {
@@ -68,17 +71,21 @@ export function CalendarPageClient({
   activeYear,
   activeMonth,
   todayKey,
-  children,
+  calendarCells,
+  initialSelectedDateKey,
 }: CalendarPageClientProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [view, setView] = useState<ViewMode>("month");
   const [fabOpen, setFabOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    initialSelectedDateKey ?? null,
+  );
   const selectedDateFromQuery = normalizeDateKey(searchParams.get("add"));
-  const sheetDate = selectedDateFromQuery ?? todayKey;
-  // Query-driven open state lets day-tap deep-link into the sheet on refresh.
-  const sheetOpen = fabOpen || selectedDateFromQuery !== null;
+  const sheetDate = selectedDate ?? todayKey;
+  // Local open state keeps day taps instant; query state is only initial/deep-link input.
+  const sheetOpen = fabOpen || selectedDate !== null;
 
   const prevMonth = offsetMonth(activeYear, activeMonth, -1);
   const nextMonth = offsetMonth(activeYear, activeMonth, 1);
@@ -98,6 +105,7 @@ export function CalendarPageClient({
 
   const closeSheet = () => {
     setFabOpen(false);
+    setSelectedDate(null);
     if (!selectedDateFromQuery) {
       return;
     }
@@ -134,7 +142,15 @@ export function CalendarPageClient({
       </div>
 
       {view === "month" ? (
-        children
+        <MonthGrid
+          cells={calendarCells}
+          todayKey={todayKey}
+          selectedDateKey={selectedDate ?? undefined}
+          onSelectDate={(dateKey) => {
+            setFabOpen(false);
+            setSelectedDate(dateKey);
+          }}
+        />
       ) : (
         <div className="mx-5 rounded-[14px] bg-white py-10 text-center text-[13px] text-[#8e8e93]">
           {view === "week" ? "주간" : "일간"} 뷰는 준비 중입니다.
@@ -144,19 +160,22 @@ export function CalendarPageClient({
       <button
         type="button"
         aria-label="일정 추가"
-        onClick={() => setFabOpen(true)}
-        className="fixed bottom-20 right-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-[#007AFF] text-white shadow-[0_6px_18px_rgba(0,122,255,0.35)]"
+        onClick={() => {
+          setSelectedDate(null);
+          setFabOpen(true);
+        }}
+        className="fixed bottom-20 right-5 z-20 flex h-14 w-14 touch-manipulation items-center justify-center rounded-full bg-[#007AFF] text-white shadow-[0_6px_18px_rgba(0,122,255,0.35)] active:scale-[0.98]"
       >
         <PlusIcon size={24} />
       </button>
 
       <AddEventSheet
-        key={`${sheetDate}:${selectedDateFromQuery ? "existing" : "create"}:${sheetOpen ? "open" : "closed"}`}
+        key={`${sheetDate}:${selectedDate ? "existing" : "create"}:${sheetOpen ? "open" : "closed"}`}
         open={sheetOpen}
         onClose={closeSheet}
         onSaved={closeSheet}
         defaultDate={sheetDate}
-        initialTab={selectedDateFromQuery ? "existing" : "create"}
+        initialTab={selectedDate ? "existing" : "create"}
       />
     </>
   );

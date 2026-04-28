@@ -8,10 +8,10 @@
 - `CalendarMonthPage.tsx` — async server component. `year/month` 쿼리를 파싱해
   `getHomePageData(date)`로 해당 월 데이터를 얻고 `MonthGrid`에 전달.
   세션이 없으면 `ensureAuthenticatedOrRedirect("/")`로 루트 로그인 화면으로 보낸다.
-- `MonthGrid.tsx` — server-rendered 6×7 그리드. 날짜/근무 칩을 그리고,
+- `MonthGrid.tsx` — `"use client"` 6×7 그리드. 날짜/근무 칩을 그리고,
   override가 있는 날짜에는 구조화 요약 칩(제목/유형/근무조) 또는 작은 점(없으면)으로
   일정 존재를 렌더.
-  day-tap을 `/calendar?year=...&month=...&add=YYYY-MM-DD` 링크로 전달.
+  day-tap은 local state callback으로 즉시 시트를 연다.
 - `CalendarPageClient.tsx` — `"use client"`. 세그먼트(월/주/일), 월 navigation
   chevrons, FAB, AddEventSheet 상태 소유. `add` 쿼리를 시트 기본 날짜와 동기화하고,
   day-tap이면 시트 기본 탭을 `등록된 일정`으로, FAB면 `일정 추가하기`로 연다.
@@ -51,7 +51,7 @@ all_day/start_at/end_at/remind_at, title, memo)으로 해석된다.
 
 ## agent-safe edit guide
 
-- `MonthGrid`는 순수 프레젠테이션 — state/effect를 넣지 말고, 인터랙션이
-  필요하면 `CalendarPageClient`로 올릴 것.
+- `MonthGrid`는 순수 프레젠테이션 — state/effect를 넣지 말고, 인터랙션
+  상태는 `CalendarPageClient`로 올릴 것.
 - 저장 엔드포인트(`/api/overrides`)는 그대로 유지. Shape 변경 필요하면
   `modules/family/api/overrides/`와 함께 수정하고 `pnpm run verify:release` 통과시킬 것.

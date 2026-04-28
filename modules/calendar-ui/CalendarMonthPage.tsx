@@ -1,6 +1,5 @@
 import { ensureAuthenticatedOrRedirect } from "@/modules/auth/server-session";
 import { CalendarPageClient } from "@/modules/calendar-ui/CalendarPageClient";
-import { MonthGrid } from "@/modules/calendar-ui/MonthGrid";
 import { getHomePageData } from "@/modules/home/home-page-data";
 import { getSeoulMonth, getSeoulYear, toSeoulDateKey } from "@/modules/home/utils/date";
 import { BellIcon, CalendarIcon, NavBar, TabShell } from "@/modules/ui/components";
@@ -80,19 +79,14 @@ export default async function CalendarMonthPage({
     <TabShell>
       <NavBar title="내 일정" left={<CalendarIcon size={20} />} right={<BellIcon size={20} />} />
       <CalendarPageClient
+        key={`${data.currentYear}-${data.currentMonth}-${selectedDateKey ?? "none"}`}
         monthLabel={formatMonthLabel(data.currentYear, data.currentMonth)}
         activeYear={data.currentYear}
         activeMonth={data.currentMonth}
         todayKey={todayKey}
-      >
-        <MonthGrid
-          cells={data.calendarCells}
-          todayKey={todayKey}
-          activeYear={data.currentYear}
-          activeMonth={data.currentMonth}
-          selectedDateKey={selectedDateKey}
-        />
-      </CalendarPageClient>
+        calendarCells={data.calendarCells}
+        initialSelectedDateKey={selectedDateKey}
+      />
     </TabShell>
   );
 }

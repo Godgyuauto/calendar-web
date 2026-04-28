@@ -134,6 +134,7 @@ main() {
   trap cleanup EXIT
   cd "$PROJECT_ROOT"
 
+  run_step "test" pnpm run test
   run_step "lint" pnpm lint
   run_step "typecheck" pnpm run typecheck
   run_step "build" pnpm run build

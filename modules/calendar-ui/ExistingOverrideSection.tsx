@@ -95,7 +95,8 @@ export function ExistingOverrideSection({
               <button
                 type="button"
                 onClick={onEditExisting}
-                className="rounded-[8px] border border-[#007AFF] px-3 py-1.5 text-[12px] font-semibold text-[#007AFF]"
+                disabled={deletingExisting}
+                className="min-h-10 flex-1 touch-manipulation rounded-[10px] border border-[#007AFF] px-3 py-2 text-[13px] font-semibold text-[#007AFF] active:bg-[#eaf3ff] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 수정하기
               </button>
@@ -105,7 +106,7 @@ export function ExistingOverrideSection({
                 type="button"
                 onClick={onDeleteExisting}
                 disabled={deletingExisting}
-                className="rounded-[8px] border border-[#ff3b30] px-3 py-1.5 text-[12px] font-semibold text-[#ff3b30] disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-10 flex-1 touch-manipulation rounded-[10px] border border-[#ff3b30] px-3 py-2 text-[13px] font-semibold text-[#ff3b30] active:bg-[#fff0ef] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {deletingExisting ? "삭제 중..." : "삭제하기"}
               </button>

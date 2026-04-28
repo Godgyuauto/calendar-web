@@ -57,6 +57,9 @@ export function AddEventSheet({
   const formSeedKey = `${defaultDate}:${existingOverride?.id ?? "new"}`;
 
   const submit = async (form: StructuredOverrideFormState) => {
+    if (saving || deleting) {
+      return;
+    }
     const timeError = getTimeRangeError(defaultDate, form);
     if (timeError) {
       setError(timeError);
@@ -83,7 +86,7 @@ export function AddEventSheet({
         return;
       }
       onSaved();
-      router.refresh();
+      setTimeout(() => router.refresh(), 0);
     } catch {
       setError("네트워크 오류가 발생했습니다.");
     } finally {
@@ -92,25 +95,26 @@ export function AddEventSheet({
   };
 
   const deleteExisting = async () => {
-    if (!existingOverride) {
+    if (!existingOverride || deleting || saving) {
       return;
     }
+    const deleteId = existingOverride.id;
     setDeleting(true);
     setError(null);
+    onSaved();
     try {
-      const response = await fetch(`/api/overrides?id=${encodeURIComponent(existingOverride.id)}`, {
+      const response = await fetch(`/api/overrides?id=${encodeURIComponent(deleteId)}`, {
         method: "DELETE",
         credentials: "include",
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: string };
-        setError(body.error ?? "삭제에 실패했습니다.");
+        window.alert(body.error ?? "삭제에 실패했습니다. 화면을 새로고침한 뒤 다시 시도해주세요.");
         return;
       }
-      onSaved();
-      router.refresh();
+      setTimeout(() => router.refresh(), 0);
     } catch {
-      setError("네트워크 오류가 발생했습니다.");
+      window.alert("네트워크 오류가 발생했습니다. 화면을 새로고침한 뒤 다시 시도해주세요.");
     } finally {
       setDeleting(false);
     }

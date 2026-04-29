@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ensureAuthenticatedOrRedirect } from "@/modules/auth/server-session";
 import { CalendarPageClient } from "@/modules/calendar-ui/CalendarPageClient";
 import { getHomePageData } from "@/modules/home/home-page-data";
@@ -77,7 +78,27 @@ export default async function CalendarMonthPage({
 
   return (
     <TabShell>
-      <NavBar title="내 일정" left={<CalendarIcon size={20} />} right={<BellIcon size={20} />} />
+      <NavBar
+        title="내 일정"
+        left={
+          <Link
+            href="/"
+            className="flex h-10 w-10 items-center justify-center"
+            aria-label="오버뷰로 이동"
+          >
+            <CalendarIcon size={20} />
+          </Link>
+        }
+        right={
+          <Link
+            href="/settings"
+            className="flex h-10 w-10 items-center justify-center"
+            aria-label="알림 설정으로 이동"
+          >
+            <BellIcon size={20} />
+          </Link>
+        }
+      />
       <CalendarPageClient
         key={`${data.currentYear}-${data.currentMonth}-${selectedDateKey ?? "none"}`}
         monthLabel={formatMonthLabel(data.currentYear, data.currentMonth)}

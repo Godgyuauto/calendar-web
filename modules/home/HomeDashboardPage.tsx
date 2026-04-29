@@ -36,7 +36,27 @@ export default async function HomeDashboardPage() {
 
   return (
     <TabShell>
-      <NavBar title="내 일정" left={<CalendarIcon size={20} />} right={<BellIcon size={20} />} />
+      <NavBar
+        title="내 일정"
+        left={
+          <Link
+            href={calendarHref}
+            className="flex h-10 w-10 items-center justify-center"
+            aria-label="전체 캘린더로 이동"
+          >
+            <CalendarIcon size={20} />
+          </Link>
+        }
+        right={
+          <Link
+            href="/settings"
+            className="flex h-10 w-10 items-center justify-center"
+            aria-label="알림 설정으로 이동"
+          >
+            <BellIcon size={20} />
+          </Link>
+        }
+      />
       <div className="flex flex-col gap-5 pb-6">
         <Suspense fallback={<HomeGreetingSkeleton />}>
           <HomeGreetingDataSection homeDataPromise={homeDataPromise} />

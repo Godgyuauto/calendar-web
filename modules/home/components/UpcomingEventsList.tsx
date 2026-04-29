@@ -1,22 +1,31 @@
-import type { FamilyEvent } from "@/modules/family";
+import type { UpcomingScheduleItem } from "@/modules/home/upcoming-schedule";
 import { SectionLabel } from "@/modules/ui/components";
 
 interface UpcomingEventsListProps {
-  events: FamilyEvent[];
+  events: UpcomingScheduleItem[];
 }
 
-function formatEventTime(iso: string): string {
-  const d = new Date(iso);
+function formatEventTime(event: UpcomingScheduleItem): string {
+  const date = new Date(event.startTime);
+  if (event.allDay) {
+    return new Intl.DateTimeFormat("ko-KR", {
+      month: "numeric",
+      day: "numeric",
+      weekday: "short",
+      timeZone: "Asia/Seoul",
+    }).format(date);
+  }
+
   return new Intl.DateTimeFormat("ko-KR", {
     month: "numeric",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Asia/Seoul",
-  }).format(d);
+  }).format(date);
 }
 
-// Card list of the next few family events.
+// Card list of family events and calendar overrides in the next week.
 // Left: blue time/date badge, right: title + optional memo line.
 export function UpcomingEventsList({ events }: UpcomingEventsListProps) {
   return (
@@ -36,7 +45,7 @@ export function UpcomingEventsList({ events }: UpcomingEventsListProps) {
               }`}
             >
               <span className="rounded-[10px] bg-[#eaf2ff] px-2.5 py-1 text-[11px] font-semibold text-[#007AFF]">
-                {formatEventTime(event.startTime)}
+                {formatEventTime(event)}
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[14px] text-[#1a1a1a]">{event.title}</p>

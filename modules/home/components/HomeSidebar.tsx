@@ -1,11 +1,11 @@
-import type { FamilyEvent } from "@/modules/family";
 import { DayShiftSummary, SHIFT_COLORS, SHIFT_LABELS_KO } from "@/modules/shift";
+import type { UpcomingScheduleItem } from "@/modules/home/upcoming-schedule";
 import { toKoreanDateTime } from "@/modules/home/utils/date";
 import { PushNotificationCard } from "@/modules/home/components/PushNotificationCard";
 
 interface HomeSidebarProps {
   todaySummary: DayShiftSummary;
-  upcomingEvents: FamilyEvent[];
+  upcomingEvents: UpcomingScheduleItem[];
 }
 
 export function HomeSidebar({ todaySummary, upcomingEvents }: HomeSidebarProps) {
@@ -46,7 +46,7 @@ export function HomeSidebar({ todaySummary, upcomingEvents }: HomeSidebarProps) 
             >
               <p className="font-medium">{event.title}</p>
               <p className="mt-1 font-mono text-xs text-slate-500">
-                {toKoreanDateTime(event.startTime)} ~ {toKoreanDateTime(event.endTime)}
+                {event.allDay ? "종일" : toKoreanDateTime(event.startTime)}
               </p>
             </li>
           ))}

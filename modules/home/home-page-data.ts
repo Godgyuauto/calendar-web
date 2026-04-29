@@ -17,6 +17,11 @@ import {
 } from "@/modules/shift";
 import { getServerAccessTokenFromCookies } from "@/modules/home/access-token";
 import { readHomeFamilyCache, writeHomeFamilyCache } from "@/modules/home/home-family-cache";
+import {
+  buildUpcomingScheduleItems,
+  getUpcomingWindow,
+  type UpcomingScheduleItem,
+} from "@/modules/home/upcoming-schedule";
 import { getSeoulMonth, getSeoulYear, toSeoulDateKey } from "@/modules/home/utils/date";
 
 export interface HomePageData {
@@ -27,7 +32,7 @@ export interface HomePageData {
   monthRows: DayShiftSummary[];
   todaySummary: DayShiftSummary;
   routineEvents: FamilyEvent[];
-  upcomingEvents: FamilyEvent[];
+  upcomingEvents: UpcomingScheduleItem[];
   calendarCells: CalendarCell[];
 }
 
@@ -35,7 +40,7 @@ interface FamilyReadModel {
   displayName: string;
   overrides: ShiftOverride[];
   routineEvents: FamilyEvent[];
-  upcomingEvents: FamilyEvent[];
+  upcomingEvents: UpcomingScheduleItem[];
 }
 
 function emptyFamilyReadModel(): FamilyReadModel {
@@ -92,23 +97,27 @@ async function readFamilyModelFromSupabase(
 
   let displayName = "나";
   let routineEvents: FamilyEvent[];
-  let upcomingEvents: FamilyEvent[];
+  let upcomingEvents: UpcomingScheduleItem[];
   let overrides: ShiftOverride[];
   const monthRange = toMonthRangeInSeoul(currentYear, currentMonth);
   const monthStartMs = new Date(monthRange.startInclusive).getTime();
   const monthEndMs = new Date(monthRange.endExclusive).getTime();
-  const nowMsEpoch = now.getTime();
+  const upcomingWindow = getUpcomingWindow(toSeoulDateKey(now));
   try {
-    const [profile, monthAndUpcomingEvents, monthOverrides] = await Promise.all([
+    const [profile, monthEvents, monthOverrides, weekOverrides] = await Promise.all([
       readAuthProfileFromSupabase(auth),
       listFamilyEventsFromSupabase(auth, {
         startTimeGte: monthRange.startInclusive,
         limit: 64,
       }),
       listShiftOverridesFromSupabase(auth, { year: currentYear, month: currentMonth }),
+      listShiftOverridesFromSupabase(auth, {
+        startDateGte: upcomingWindow.startDateKey,
+        startDateLt: upcomingWindow.endDateKey,
+      }),
     ]);
     displayName = profile.displayName ?? "나";
-    routineEvents = monthAndUpcomingEvents
+    routineEvents = monthEvents
       .filter(
         (event) =>
           event.isRoutine && (() => {
@@ -117,12 +126,11 @@ async function readFamilyModelFromSupabase(
           })(),
       )
       .slice(0, 8);
-    upcomingEvents = monthAndUpcomingEvents
-      .filter(
-        (event) =>
-          !event.isRoutine && new Date(event.startTime).getTime() >= nowMsEpoch,
-      )
-      .slice(0, 4);
+    upcomingEvents = buildUpcomingScheduleItems({
+      events: monthEvents,
+      overrides: weekOverrides,
+      window: upcomingWindow,
+    });
     overrides = monthOverrides;
   } catch (error) {
     const failure = getFamilyRepositoryFailure(error);

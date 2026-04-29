@@ -40,7 +40,13 @@ function toShiftOverride(row: ShiftOverrideRow): ShiftOverride {
 
 export async function listShiftOverridesFromSupabase(
   auth: FamilyAuthContext,
-  input?: { year?: number; month?: number; scope?: "family" | "mine" },
+  input?: {
+    year?: number;
+    month?: number;
+    startDateGte?: string;
+    startDateLt?: string;
+    scope?: "family" | "mine";
+  },
 ): Promise<ShiftOverride[]> {
   const query = new URLSearchParams({
     select: "id,user_id,date,override_type,override_shift,label,start_time,end_time,note,created_at",
@@ -56,6 +62,12 @@ export async function listShiftOverridesFromSupabase(
     const end = `${input.year}-${String(input.month).padStart(2, "0")}-${String(last).padStart(2, "0")}`;
     query.set("date", `gte.${start}`);
     query.append("date", `lte.${end}`);
+  }
+  if (input?.startDateGte) {
+    query.set("date", `gte.${input.startDateGte}`);
+  }
+  if (input?.startDateLt) {
+    query.append("date", `lt.${input.startDateLt}`);
   }
 
   const response = await fetch(buildSupabaseUrl(`/rest/v1/shift_overrides?${query.toString()}`), {

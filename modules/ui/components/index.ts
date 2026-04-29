@@ -18,7 +18,6 @@ export {
   CalendarIcon,
   BellIcon,
   PersonIcon,
-  ChatIcon,
   GearIcon,
   PlusIcon,
   ChevronLeftIcon,

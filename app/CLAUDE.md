@@ -11,7 +11,6 @@
 - `onboarding/page.tsx` — `modules/onboarding/OnboardingRoutePage` 재export(세션 없으면 `/` 리다이렉트).
 - `calendar/page.tsx` — `modules/calendar-ui/CalendarMonthPage` 재export.
 - `members/page.tsx` — `modules/members/MembersPage` 재export.
-- `messages/page.tsx` — inline placeholder (디자인 미정, 세션 없으면 `/` 리다이렉트).
 - `settings/page.tsx` — `modules/settings/SettingsPage` 재export.
 - `manifest.ts` — PWA manifest. Manifest 값 수정만.
 - `sw-register.tsx` — `/sw.js` 등록 클라이언트 컴포넌트. 업데이트 활성화 로직은 `modules/pwa/service-worker-update.ts` 사용.

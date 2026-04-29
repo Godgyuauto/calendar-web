@@ -8,7 +8,7 @@ interface TabShellProps {
 }
 
 // Shared shell for every tab-bar page. Caps width at phone size on desktop
-// and pins the 4-tab navigation to the bottom with safe-area inset.
+// and pins the bottom navigation to the bottom with safe-area inset.
 export function TabShell({ children, hideTabBar = false }: TabShellProps) {
   return (
     <div className="app-shell">

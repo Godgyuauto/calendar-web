@@ -38,9 +38,6 @@ export const BellIcon = (p: IconProps) => (
 export const PersonIcon = (p: IconProps) => (
   <Base {...p} d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" />
 );
-export const ChatIcon = (p: IconProps) => (
-  <Base {...p} d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-);
 export const GearIcon = (p: IconProps) => (
   <Base
     {...p}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarIcon, ChatIcon, GearIcon, PersonIcon } from "@/modules/ui/components/icons";
+import { CalendarIcon, GearIcon, PersonIcon } from "@/modules/ui/components/icons";
 
 interface Tab {
   href: string;
@@ -18,7 +18,6 @@ const TABS: Tab[] = [
   // navigation group and is treated as active for this tab.
   { href: "/", label: "캘린더", icon: <CalendarIcon />, exact: true },
   { href: "/members", label: "멤버", icon: <PersonIcon /> },
-  { href: "/messages", label: "메시지", icon: <ChatIcon /> },
   { href: "/settings", label: "설정", icon: <GearIcon /> },
 ];
 

@@ -20,7 +20,7 @@ import {
   Toggle, BottomSheet,
   Chip,
   SectionLabel, SettingsRow,
-  CalendarIcon, BellIcon, PersonIcon, ChatIcon, GearIcon,
+  CalendarIcon, BellIcon, PersonIcon, GearIcon,
   PlusIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon, UserPlusIcon,
 } from "@/modules/ui/components";
 ```
@@ -43,7 +43,7 @@ modules/ui/
     ├── PrimaryButton.tsx   ← PrimaryButton, SecondaryButton
     ├── TextField.tsx       ← filled gray-100 input
     ├── SegmentControl.tsx  ← generic typed pill segment (A/B/C/OFF etc.)
-    ├── TabBar.tsx          ← sticky bottom nav, 4 tabs
+    ├── TabBar.tsx          ← sticky bottom nav
     ├── NavBar.tsx          ← 44px top bar, title + icon slots
     ├── Toggle.tsx          ← 44×26 iOS switch
     ├── BottomSheet.tsx     ← dim + rounded-top sheet, ESC/backdrop close

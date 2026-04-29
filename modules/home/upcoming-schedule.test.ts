@@ -92,4 +92,33 @@ describe("buildUpcomingScheduleItems", () => {
 
     expect(items.map((item) => item.title)).toEqual(["저녁", "가족 일정"]);
   });
+
+  it("prefers structured local note time over UTC-normalized database time", () => {
+    const items = buildUpcomingScheduleItems({
+      window: getUpcomingWindow("2026-05-01"),
+      events: [],
+      overrides: [
+        override({
+          id: "picnic",
+          date: "2026-05-04",
+          label: "서윤이 소풍",
+          startTime: "2026-05-04T09:00:00+00:00",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: false,
+            start_at: "2026-05-04T09:00",
+            end_at: "2026-05-04T15:00",
+            remind_at: null,
+            title: "서윤이 소풍",
+            memo: "세종 베어트리파크",
+          }),
+        }),
+      ],
+    });
+
+    expect(items[0]?.startTime).toBe("2026-05-04T09:00");
+    expect(items[0]?.allDay).toBe(false);
+  });
 });

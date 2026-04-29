@@ -1,1 +1,1 @@
-export const PWA_CACHE_VERSION = "family-shift-v17";
+export const PWA_CACHE_VERSION = "family-shift-v18";

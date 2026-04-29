@@ -1,4 +1,5 @@
 import type { FamilyEvent } from "@/modules/family";
+import { parseStructuredOverrideNote } from "@/modules/family/domain/structured-override-note";
 import type { ShiftOverride } from "@/modules/shift";
 
 export interface UpcomingScheduleItem {
@@ -28,7 +29,19 @@ function toSeoulStartIso(dateKey: string): string {
 }
 
 function getOverrideStartTime(override: ShiftOverride): string {
-  return override.startTime ?? toSeoulStartIso(override.date);
+  const note = parseStructuredOverrideNote(override.note, {
+    eventType: override.overrideType,
+    shiftChange: override.overrideShift ?? "KEEP",
+  });
+  return note?.start_at ?? override.startTime ?? toSeoulStartIso(override.date);
+}
+
+function isOverrideAllDay(override: ShiftOverride): boolean {
+  const note = parseStructuredOverrideNote(override.note, {
+    eventType: override.overrideType,
+    shiftChange: override.overrideShift ?? "KEEP",
+  });
+  return note?.all_day ?? override.startTime === null;
 }
 
 export function getUpcomingWindow(todayKey: string, days = 7): UpcomingWindow {
@@ -71,7 +84,7 @@ export function buildUpcomingScheduleItems(input: {
       id: `override:${override.id}`,
       title: override.label,
       startTime: getOverrideStartTime(override),
-      allDay: override.startTime === null,
+      allDay: isOverrideAllDay(override),
       source: "override" as const,
     }));
 

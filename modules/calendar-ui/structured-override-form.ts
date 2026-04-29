@@ -75,8 +75,12 @@ export function toOverrideSubmitPayload(
     overrideType: form.eventType,
     overrideShift: shiftChange === "KEEP" ? null : shiftChange,
     label: eventLabel,
-    startTime: notePayload.start_at,
-    endTime: notePayload.end_at,
+    startTime: toSeoulOffsetDateTime(notePayload.start_at),
+    endTime: toSeoulOffsetDateTime(notePayload.end_at),
     note: JSON.stringify(notePayload),
   };
+}
+
+function toSeoulOffsetDateTime(value: string | null): string | null {
+  return value ? `${value}:00+09:00` : null;
 }

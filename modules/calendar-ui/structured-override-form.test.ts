@@ -61,8 +61,8 @@ describe("structured override form mapping", () => {
       all_day: boolean;
     };
 
-    expect(payload.startTime).toBe("2026-04-29T22:30");
-    expect(payload.endTime).toBe("2026-04-30T03:10");
+    expect(payload.startTime).toBe("2026-04-29T22:30:00+09:00");
+    expect(payload.endTime).toBe("2026-04-30T03:10:00+09:00");
     expect(note.start_at).toBe("2026-04-29T22:30");
     expect(note.end_at).toBe("2026-04-30T03:10");
     expect(note.all_day).toBe(false);

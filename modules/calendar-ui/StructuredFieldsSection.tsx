@@ -51,12 +51,12 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
 
       <SectionLabel className="px-0">시간 (선택)</SectionLabel>
       <div className="space-y-2">
-        <div className="grid grid-cols-[36px_minmax(0,1fr)_92px] items-center gap-2">
+        <div className="grid grid-cols-[36px_minmax(124px,1fr)_132px] items-center gap-2">
           <span className="text-[12px] font-semibold text-[#8e8e93]">시작</span>
           <TextField
             type="date"
             value={form.startDate}
-            className="px-2 text-center"
+            className="min-w-0 px-2 text-center text-[13px] tabular-nums"
             onChange={(event) =>
               setForm((current) => ({ ...current, startDate: event.target.value }))
             }
@@ -65,18 +65,18 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
             type="time"
             value={form.startAt}
             placeholder="09:00"
-            className="px-2 text-center"
+            className="min-w-0 px-2 text-center text-[13px] tabular-nums"
             onChange={(event) =>
               setForm((current) => ({ ...current, startAt: event.target.value }))
             }
           />
         </div>
-        <div className="grid grid-cols-[36px_minmax(0,1fr)_92px] items-center gap-2">
+        <div className="grid grid-cols-[36px_minmax(124px,1fr)_132px] items-center gap-2">
           <span className="text-[12px] font-semibold text-[#8e8e93]">종료</span>
           <TextField
             type="date"
             value={form.endDate}
-            className="px-2 text-center"
+            className="min-w-0 px-2 text-center text-[13px] tabular-nums"
             onChange={(event) =>
               setForm((current) => ({ ...current, endDate: event.target.value }))
             }
@@ -85,7 +85,7 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
             type="time"
             value={form.endAt}
             placeholder="18:00"
-            className="px-2 text-center"
+            className="min-w-0 px-2 text-center text-[13px] tabular-nums"
             onChange={(event) =>
               setForm((current) => ({ ...current, endAt: event.target.value }))
             }

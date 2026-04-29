@@ -1,6 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import { TimeRangeSection } from "@/modules/calendar-ui/TimeRangeSection";
 import {
   EVENT_TYPE_OPTIONS,
   SHIFT_CHANGE_OPTIONS,
@@ -49,49 +50,7 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
         ))}
       </div>
 
-      <SectionLabel className="px-0">시간 (선택)</SectionLabel>
-      <div className="space-y-2">
-        <div className="grid grid-cols-[36px_minmax(124px,1fr)_132px] items-center gap-2">
-          <span className="text-[12px] font-semibold text-[#8e8e93]">시작</span>
-          <TextField
-            type="date"
-            value={form.startDate}
-            className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-            onChange={(event) =>
-              setForm((current) => ({ ...current, startDate: event.target.value }))
-            }
-          />
-          <TextField
-            type="time"
-            value={form.startAt}
-            placeholder="09:00"
-            className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-            onChange={(event) =>
-              setForm((current) => ({ ...current, startAt: event.target.value }))
-            }
-          />
-        </div>
-        <div className="grid grid-cols-[36px_minmax(124px,1fr)_132px] items-center gap-2">
-          <span className="text-[12px] font-semibold text-[#8e8e93]">종료</span>
-          <TextField
-            type="date"
-            value={form.endDate}
-            className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-            onChange={(event) =>
-              setForm((current) => ({ ...current, endDate: event.target.value }))
-            }
-          />
-          <TextField
-            type="time"
-            value={form.endAt}
-            placeholder="18:00"
-            className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-            onChange={(event) =>
-              setForm((current) => ({ ...current, endAt: event.target.value }))
-            }
-          />
-        </div>
-      </div>
+      <TimeRangeSection form={form} setForm={setForm} />
 
       <SectionLabel className="px-0">일정 제목 (선택)</SectionLabel>
       <TextField

@@ -25,6 +25,7 @@
 - `AddEventSheetSections.tsx` — 섹션 barrel export.
 - `ExistingOverrideSection.tsx` — 등록된 일정 요약 + 수정/삭제 액션 UI.
 - `StructuredFieldsSection.tsx` — 일정 추가/수정 입력 필드 UI.
+- `TimeRangeSection.tsx` — `종일/시간 지정` 토글 + 시작/종료 날짜·시간 입력 UI.
 - `add-event-sheet-utils.ts` — 시트 날짜 라벨/시간 범위 검증 유틸.
 - `structured-override.ts` — compat barrel. 실제 구현은 `structured-override-{types,options,time,form,display}.ts`.
   구조화 필드를 `note` JSON(`schema=calendar_override_v1`)으로 직렬화/역직렬화한다.

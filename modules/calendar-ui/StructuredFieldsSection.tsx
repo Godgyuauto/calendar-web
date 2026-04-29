@@ -1,6 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import { ReminderSection } from "@/modules/calendar-ui/ReminderSection";
 import { TimeRangeSection } from "@/modules/calendar-ui/TimeRangeSection";
 import {
   EVENT_TYPE_OPTIONS,
@@ -84,12 +85,7 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
         placeholder="메모 입력"
       />
 
-      <SectionLabel className="px-0">알림 시각 (선택)</SectionLabel>
-      <TextField
-        type="datetime-local"
-        value={form.remindAt}
-        onChange={(event) => setForm((current) => ({ ...current, remindAt: event.target.value }))}
-      />
+      <ReminderSection form={form} setForm={setForm} />
     </>
   );
 }

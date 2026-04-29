@@ -31,6 +31,7 @@ export interface HomePageData {
   todayKey: string;
   monthRows: DayShiftSummary[];
   todaySummary: DayShiftSummary;
+  monthOverrides: ShiftOverride[];
   routineEvents: FamilyEvent[];
   upcomingEvents: UpcomingScheduleItem[];
   calendarCells: CalendarCell[];
@@ -183,6 +184,7 @@ export async function getHomePageData(now: Date = new Date()): Promise<HomePageD
     todayKey,
     monthRows,
     todaySummary,
+    monthOverrides: familyModel.overrides,
     routineEvents: familyModel.routineEvents,
     upcomingEvents: familyModel.upcomingEvents,
     calendarCells,

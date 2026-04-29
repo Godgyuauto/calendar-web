@@ -3,8 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { ShiftOverride } from "@/modules/shift";
 import type { CalendarCell } from "@/modules/calendar";
 import { AddEventSheet } from "@/modules/calendar-ui/AddEventSheet";
+import { DayAgenda } from "@/modules/calendar-ui/DayAgenda";
 import { MonthGrid } from "@/modules/calendar-ui/MonthGrid";
 import {
   ChevronLeftIcon,
@@ -21,12 +23,11 @@ interface CalendarPageClientProps {
   activeMonth: number;
   todayKey: string;
   calendarCells: CalendarCell[];
+  monthOverrides: ShiftOverride[];
   initialSelectedDateKey?: string;
 }
 
-// Client wrapper around the month grid.
-// Owns: view-mode segment state, month navigation links, and AddEventSheet state.
-// Day taps open the sheet locally; `?add=YYYY-MM-DD` remains an initial deep link.
+// Owns calendar view state, month links, and the AddEventSheet state.
 const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function offsetMonth(year: number, month: number, offset: number): { year: number; month: number } {
@@ -72,6 +73,7 @@ export function CalendarPageClient({
   activeMonth,
   todayKey,
   calendarCells,
+  monthOverrides,
   initialSelectedDateKey,
 }: CalendarPageClientProps) {
   const pathname = usePathname();
@@ -79,12 +81,10 @@ export function CalendarPageClient({
   const searchParams = useSearchParams();
   const [view, setView] = useState<ViewMode>("month");
   const [fabOpen, setFabOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string | null>(
-    initialSelectedDateKey ?? null,
-  );
+  const [selectedDate, setSelectedDate] = useState<string | null>(initialSelectedDateKey ?? null);
+  const [focusedDate, setFocusedDate] = useState(initialSelectedDateKey ?? todayKey);
   const selectedDateFromQuery = normalizeDateKey(searchParams.get("add"));
   const sheetDate = selectedDate ?? todayKey;
-  // Local open state keeps day taps instant; query state is only initial/deep-link input.
   const sheetOpen = fabOpen || selectedDate !== null;
 
   const prevMonth = offsetMonth(activeYear, activeMonth, -1);
@@ -148,12 +148,26 @@ export function CalendarPageClient({
           selectedDateKey={selectedDate ?? undefined}
           onSelectDate={(dateKey) => {
             setFabOpen(false);
+            setFocusedDate(dateKey);
+            setSelectedDate(dateKey);
+          }}
+        />
+      ) : view === "day" ? (
+        <DayAgenda
+          dateKey={focusedDate}
+          todayKey={todayKey}
+          calendarCells={calendarCells}
+          overrides={monthOverrides}
+          onChangeDate={setFocusedDate}
+          onOpenDateSheet={(dateKey) => {
+            setFabOpen(false);
+            setFocusedDate(dateKey);
             setSelectedDate(dateKey);
           }}
         />
       ) : (
         <div className="mx-5 rounded-[14px] bg-white py-10 text-center text-[13px] text-[#8e8e93]">
-          {view === "week" ? "주간" : "일간"} 뷰는 준비 중입니다.
+          주간 뷰는 준비 중입니다.
         </div>
       )}
 

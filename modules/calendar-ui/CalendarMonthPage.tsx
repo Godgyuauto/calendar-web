@@ -106,6 +106,7 @@ export default async function CalendarMonthPage({
         activeMonth={data.currentMonth}
         todayKey={todayKey}
         calendarCells={data.calendarCells}
+        monthOverrides={data.monthOverrides}
         initialSelectedDateKey={selectedDateKey}
       />
     </TabShell>

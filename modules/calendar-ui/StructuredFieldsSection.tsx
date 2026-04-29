@@ -50,26 +50,47 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
       </div>
 
       <SectionLabel className="px-0">시간 (선택)</SectionLabel>
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-        <TextField
-          type="time"
-          value={form.startAt}
-          placeholder="09:00"
-          className="text-center"
-          onChange={(event) =>
-            setForm((current) => ({ ...current, startAt: event.target.value }))
-          }
-        />
-        <span className="text-[12px] font-semibold text-[#8e8e93]">→</span>
-        <TextField
-          type="time"
-          value={form.endAt}
-          placeholder="18:00"
-          className="text-center"
-          onChange={(event) =>
-            setForm((current) => ({ ...current, endAt: event.target.value }))
-          }
-        />
+      <div className="space-y-2">
+        <div className="grid grid-cols-[36px_minmax(0,1fr)_92px] items-center gap-2">
+          <span className="text-[12px] font-semibold text-[#8e8e93]">시작</span>
+          <TextField
+            type="date"
+            value={form.startDate}
+            className="px-2 text-center"
+            onChange={(event) =>
+              setForm((current) => ({ ...current, startDate: event.target.value }))
+            }
+          />
+          <TextField
+            type="time"
+            value={form.startAt}
+            placeholder="09:00"
+            className="px-2 text-center"
+            onChange={(event) =>
+              setForm((current) => ({ ...current, startAt: event.target.value }))
+            }
+          />
+        </div>
+        <div className="grid grid-cols-[36px_minmax(0,1fr)_92px] items-center gap-2">
+          <span className="text-[12px] font-semibold text-[#8e8e93]">종료</span>
+          <TextField
+            type="date"
+            value={form.endDate}
+            className="px-2 text-center"
+            onChange={(event) =>
+              setForm((current) => ({ ...current, endDate: event.target.value }))
+            }
+          />
+          <TextField
+            type="time"
+            value={form.endAt}
+            placeholder="18:00"
+            className="px-2 text-center"
+            onChange={(event) =>
+              setForm((current) => ({ ...current, endAt: event.target.value }))
+            }
+          />
+        </div>
       </div>
 
       <SectionLabel className="px-0">일정 제목 (선택)</SectionLabel>

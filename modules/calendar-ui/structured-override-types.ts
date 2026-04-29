@@ -19,6 +19,8 @@ export interface EventTypeOption {
 export interface StructuredOverrideFormState {
   eventType: OverrideType;
   shiftChange: ShiftCode | "KEEP";
+  startDate: string;
+  endDate: string;
   startAt: string;
   endAt: string;
   remindAt: string;

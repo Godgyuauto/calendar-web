@@ -60,7 +60,7 @@ export function AddEventSheet({
     if (saving || deleting) {
       return;
     }
-    const timeError = getTimeRangeError(defaultDate, form);
+    const timeError = getTimeRangeError(form);
     if (timeError) {
       setError(timeError);
       return;

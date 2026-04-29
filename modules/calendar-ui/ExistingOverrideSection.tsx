@@ -41,16 +41,6 @@ function formatDateTimeLabel(value: string | null): string {
   }).format(parsed);
 }
 
-function formatTimeOnly(value: string | null): string {
-  const label = formatDateTimeLabel(value);
-  if (label === "-") {
-    return label;
-  }
-
-  const timeMatch = label.match(/(\d{2}:\d{2})$/);
-  return timeMatch ? timeMatch[1] : label;
-}
-
 export function ExistingOverrideSection({
   existingLoading,
   existingOverride,
@@ -86,8 +76,8 @@ export function ExistingOverrideSection({
           </p>
           {existingDisplay.startAt && existingDisplay.endAt ? (
             <p className="mt-1 text-[12px] text-[#8e8e93]">
-              시간: {formatTimeOnly(existingDisplay.startAt)} ~{" "}
-              {formatTimeOnly(existingDisplay.endAt)}
+              시간: {formatDateTimeLabel(existingDisplay.startAt)} ~{" "}
+              {formatDateTimeLabel(existingDisplay.endAt)}
             </p>
           ) : null}
           <div className="mt-3 flex gap-2">

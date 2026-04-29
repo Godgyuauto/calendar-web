@@ -6,6 +6,7 @@ import {
 import { getEventTypeOption } from "@/modules/calendar-ui/structured-override-options";
 import {
   toDateTimeFromDateAndTime,
+  toDateInputOrDefault,
   toTimeInputOrEmpty,
 } from "@/modules/calendar-ui/structured-override-time";
 import type {
@@ -29,12 +30,16 @@ export function toStructuredOverrideFormState(input: {
       ? ""
       : override.label.trim()
     : "";
+  const startSource = note?.start_at ?? override?.startTime;
+  const endSource = note?.end_at ?? override?.endTime;
 
   return {
     eventType,
     shiftChange: note?.shift_change ?? override?.overrideShift ?? "KEEP",
-    startAt: toTimeInputOrEmpty(note?.start_at ?? override?.startTime),
-    endAt: toTimeInputOrEmpty(note?.end_at ?? override?.endTime),
+    startDate: toDateInputOrDefault(startSource, input.dateKey),
+    endDate: toDateInputOrDefault(endSource, input.dateKey),
+    startAt: toTimeInputOrEmpty(startSource),
+    endAt: toTimeInputOrEmpty(endSource),
     remindAt: toDateTimeLocalOrNull(note?.remind_at) ?? "",
     title: note?.title ?? fallbackTitle,
     memo: note?.memo ?? "",
@@ -48,8 +53,8 @@ export function toOverrideSubmitPayload(
   const title = form.title.trim();
   const memo = form.memo.trim();
   const shiftChange = form.shiftChange;
-  const startAt = toDateTimeFromDateAndTime(dateKey, form.startAt);
-  const endAt = toDateTimeFromDateAndTime(dateKey, form.endAt);
+  const startAt = toDateTimeFromDateAndTime(form.startDate, form.startAt);
+  const endAt = toDateTimeFromDateAndTime(form.endDate, form.endAt);
   const hasRange = Boolean(startAt && endAt);
   const eventLabel = title || getEventTypeOption(form.eventType).label;
   const remindAt = form.remindAt.trim();

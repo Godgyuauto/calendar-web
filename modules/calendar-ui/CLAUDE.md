@@ -19,7 +19,7 @@
 - `AddEventSheetHeader.tsx`, `AddEventSheetTabs.tsx` — 시트 상단 UI와 탭 전환 UI.
 - `AddEventSheetEditor.tsx` — 탭(`일정 추가하기`)의 입력 editor.
   일정 유형 chip grid + 근무조 변경 row + 구조화 입력(start_at/end_at/remind_at/title/memo) + 저장.
-  시간 입력 UI는 `HH:mm`로 받고, 저장 시 `YYYY-MM-DDTHH:mm`로 직렬화해 API payload로 보낸다.
+  시작/종료는 날짜+`HH:mm`로 받고, 저장 시 `YYYY-MM-DDTHH:mm`로 직렬화해 API payload로 보낸다.
   시트 진입 시 `GET /api/overrides?scope=mine`로 해당 날짜 기존 일정을 먼저 노출하고,
   등록은 `POST /api/overrides`, 수정은 `PATCH /api/overrides`, 삭제는 `DELETE /api/overrides?id=...`로 처리한다.
 - `AddEventSheetSections.tsx` — 섹션 barrel export.

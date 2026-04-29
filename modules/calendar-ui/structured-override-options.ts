@@ -12,6 +12,10 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
   { id: "custom", emoji: "✏️", label: "커스텀" },
 ];
 
+export const OFF_REASON_OPTIONS: EventTypeOption[] = EVENT_TYPE_OPTIONS.filter((option) =>
+  ["vacation", "sick", "custom"].includes(option.id),
+);
+
 export const SHIFT_CHANGE_OPTIONS: (ShiftCode | "KEEP")[] = ["A", "B", "C", "OFF", "KEEP"];
 
 export function getEventTypeOption(type: OverrideType): EventTypeOption {

@@ -42,21 +42,28 @@ export function MonthGrid({
       </div>
       <div className="grid grid-cols-7">
         {cells.map((cell) => {
+          const shift = cell.shift;
           const isToday = cell.date === todayKey;
           const isSelected = selectedDateKey === cell.date;
-          const palette = cell.shift ? SHIFT_PALETTE[cell.shift.finalShift] : undefined;
+          const palette = shift ? SHIFT_PALETTE[shift.finalShift] : undefined;
           const overrideLabel =
-            cell.isCurrentMonth && cell.shift?.override?.label
-              ? getMonthGridOverrideLabel(cell.shift.override)
+            cell.isCurrentMonth && shift?.override?.label
+              ? getMonthGridOverrideLabel(shift.override)
               : "";
-          const hasOverrideEvent = cell.isCurrentMonth && Boolean(cell.shift?.override);
+          const hasOverrideEvent = cell.isCurrentMonth && Boolean(shift?.override);
+          const hasShiftChange =
+            hasOverrideEvent &&
+            Boolean(shift) &&
+            shift?.baseShift !== shift?.finalShift;
           return (
             <button
               type="button"
               key={cell.date}
               onClick={() => onSelectDate(cell.date)}
               aria-label={`${cell.date} 일정 보기`}
-              className="flex min-h-[82px] touch-manipulation flex-col gap-1 border-b border-[#f1f2f6] px-1.5 py-1 text-left text-[12px] active:bg-[#f7f8fb]"
+              className={`flex min-h-[82px] touch-manipulation flex-col gap-1 border-b border-[#f1f2f6] px-1.5 py-1 text-left text-[12px] active:bg-[#f7f8fb] ${
+                hasShiftChange ? "bg-[#fffaf2]" : ""
+              }`}
             >
               <span
                 className={`flex h-7 w-7 items-center justify-center rounded-full text-[13px] ${
@@ -69,12 +76,17 @@ export function MonthGrid({
               >
                 {cell.day}
               </span>
-              {cell.shift && cell.isCurrentMonth && palette ? (
+              {shift && cell.isCurrentMonth && palette ? (
                 <span
-                  className="w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                  style={{ backgroundColor: palette.bg, color: palette.fg }}
+                  className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                    hasShiftChange ? "ring-1 ring-[#ff9500]/35" : ""
+                  }`}
+                  style={{
+                    backgroundColor: hasShiftChange ? "#fff1dd" : palette.bg,
+                    color: hasShiftChange ? "#b35a00" : palette.fg,
+                  }}
                 >
-                  {cell.shift.finalShift}
+                  {shift.finalShift}
                 </span>
               ) : null}
               {overrideLabel ? (

@@ -8,6 +8,7 @@ describe("structured override form mapping", () => {
   it("uses the selected date as the default start and end date", () => {
     const form = toStructuredOverrideFormState({ dateKey: "2026-04-29" });
 
+    expect(form.eventType).toBe("custom");
     expect(form.startDate).toBe("2026-04-29");
     expect(form.endDate).toBe("2026-04-29");
     expect(form.startAt).toBe("");

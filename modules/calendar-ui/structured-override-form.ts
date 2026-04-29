@@ -24,7 +24,7 @@ export function toStructuredOverrideFormState(input: {
     eventType: override?.overrideType,
     shiftChange: override?.overrideShift ?? "KEEP",
   });
-  const eventType = note?.event_type ?? override?.overrideType ?? "vacation";
+  const eventType = note?.event_type ?? override?.overrideType ?? "custom";
   const fallbackTitle = override
     ? override.label.trim() === getEventTypeOption(eventType).label
       ? ""

@@ -53,7 +53,7 @@ describe("getTimeRangeError", () => {
 describe("getFormValidationError", () => {
   it("requires a title when the event type is custom", () => {
     expect(getFormValidationError(form({ eventType: "custom" }))).toBe(
-      "커스텀 일정명을 입력해주세요.",
+      "일정 제목을 입력해주세요.",
     );
   });
 

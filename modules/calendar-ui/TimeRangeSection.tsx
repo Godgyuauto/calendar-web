@@ -35,7 +35,6 @@ function getEndDateAfterStartDateChange(
 
 export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
   const hasTime = form.startAt.length > 0 || form.endAt.length > 0;
-  const nextEndDate = nextDateKey(form.startDate);
 
   return (
     <>
@@ -116,26 +115,6 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
                   setForm((current) => ({ ...current, endAt: event.target.value }))
                 }
               />
-            </div>
-            <div className="flex gap-1.5">
-              <Chip
-                active={form.endDate === form.startDate}
-                onClick={() =>
-                  setForm((current) => ({ ...current, endDate: current.startDate }))
-                }
-                variant="segment"
-              >
-                같은 날 종료
-              </Chip>
-              <Chip
-                active={form.endDate === nextEndDate}
-                onClick={() =>
-                  setForm((current) => ({ ...current, endDate: nextDateKey(current.startDate) }))
-                }
-                variant="segment"
-              >
-                다음날 종료
-              </Chip>
             </div>
           </>
         ) : null}

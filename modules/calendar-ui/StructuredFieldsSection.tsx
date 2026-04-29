@@ -19,6 +19,8 @@ interface StructuredFieldsSectionProps {
 }
 
 export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSectionProps) {
+  const isCustom = form.eventType === "custom";
+
   return (
     <>
       <SectionLabel className="px-0">일정 유형</SectionLabel>
@@ -36,6 +38,18 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
         ))}
       </div>
 
+      {isCustom ? (
+        <>
+          <SectionLabel className="px-0">커스텀 일정명</SectionLabel>
+          <TextField
+            value={form.title}
+            onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+            placeholder="예: 회식, 가족 모임"
+            aria-required="true"
+          />
+        </>
+      ) : null}
+
       <SectionLabel className="px-0">근무조 변경</SectionLabel>
       <div className="flex gap-1.5">
         {SHIFT_CHANGE_OPTIONS.map((option) => (
@@ -52,12 +66,16 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
 
       <TimeRangeSection form={form} setForm={setForm} />
 
-      <SectionLabel className="px-0">일정 제목 (선택)</SectionLabel>
-      <TextField
-        value={form.title}
-        onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
-        placeholder="예: 연차, 직무 교육"
-      />
+      {!isCustom ? (
+        <>
+          <SectionLabel className="px-0">일정 제목 (선택)</SectionLabel>
+          <TextField
+            value={form.title}
+            onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+            placeholder="예: 연차, 직무 교육"
+          />
+        </>
+      ) : null}
 
       <SectionLabel className="px-0">메모 (선택)</SectionLabel>
       <TextField

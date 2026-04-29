@@ -19,7 +19,7 @@ import {
 } from "@/modules/calendar-ui/structured-override";
 import {
   formatKoreanDate,
-  getTimeRangeError,
+  getFormValidationError,
 } from "@/modules/calendar-ui/add-event-sheet-utils";
 import {
   BottomSheet,
@@ -60,9 +60,9 @@ export function AddEventSheet({
     if (saving || deleting) {
       return;
     }
-    const timeError = getTimeRangeError(form);
-    if (timeError) {
-      setError(timeError);
+    const validationError = getFormValidationError(form);
+    if (validationError) {
+      setError(validationError);
       return;
     }
     const payload = toOverrideSubmitPayload(defaultDate, form);

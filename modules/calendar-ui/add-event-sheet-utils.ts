@@ -40,3 +40,11 @@ export function getTimeRangeError(form: StructuredOverrideFormState): string | n
     ? "시작/종료 시간을 확인해주세요."
     : null;
 }
+
+export function getFormValidationError(form: StructuredOverrideFormState): string | null {
+  if (form.eventType === "custom" && form.title.trim().length === 0) {
+    return "커스텀 일정명을 입력해주세요.";
+  }
+
+  return getTimeRangeError(form);
+}

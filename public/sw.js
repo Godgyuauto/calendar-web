@@ -1,4 +1,4 @@
-const CACHE_VERSION = "family-shift-v10";
+const CACHE_VERSION = "family-shift-v11";
 const OFFLINE_URL = "/offline.html";
 const CACHE_TARGETS = [OFFLINE_URL];
 

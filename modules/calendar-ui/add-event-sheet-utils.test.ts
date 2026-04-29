@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getTimeRangeError } from "@/modules/calendar-ui/add-event-sheet-utils";
+import {
+  getFormValidationError,
+  getTimeRangeError,
+} from "@/modules/calendar-ui/add-event-sheet-utils";
 import type { StructuredOverrideFormState } from "@/modules/calendar-ui/structured-override";
 
 function form(overrides: Partial<StructuredOverrideFormState>): StructuredOverrideFormState {
@@ -44,5 +47,17 @@ describe("getTimeRangeError", () => {
         }),
       ),
     ).toBeNull();
+  });
+});
+
+describe("getFormValidationError", () => {
+  it("requires a title when the event type is custom", () => {
+    expect(getFormValidationError(form({ eventType: "custom" }))).toBe(
+      "커스텀 일정명을 입력해주세요.",
+    );
+  });
+
+  it("allows a custom event when a title is provided", () => {
+    expect(getFormValidationError(form({ eventType: "custom", title: "회식" }))).toBeNull();
   });
 });

@@ -66,4 +66,29 @@ describe("structured override form mapping", () => {
     expect(note.end_at).toBe("2026-04-30T03:10");
     expect(note.all_day).toBe(false);
   });
+
+  it("stores a custom event title as both label and structured title", () => {
+    const payload = toOverrideSubmitPayload("2026-04-30", {
+      eventType: "custom",
+      shiftChange: "KEEP",
+      startDate: "2026-04-30",
+      endDate: "2026-04-30",
+      startAt: "",
+      endAt: "",
+      remindAt: "",
+      title: "회식",
+      memo: "제조랑 회식",
+    });
+    const note = JSON.parse(payload.note) as {
+      event_type: string;
+      title: string;
+      memo: string;
+    };
+
+    expect(payload.overrideType).toBe("custom");
+    expect(payload.label).toBe("회식");
+    expect(note.event_type).toBe("custom");
+    expect(note.title).toBe("회식");
+    expect(note.memo).toBe("제조랑 회식");
+  });
 });

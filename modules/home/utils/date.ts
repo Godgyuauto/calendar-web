@@ -35,6 +35,21 @@ export function getSeoulMonth(date: Date): number {
   );
 }
 
+function toSeoulDate(value: string): Date {
+  const hasTimeZone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(value);
+  const seoulValue = hasTimeZone ? value : `${value}+09:00`;
+  return new Date(seoulValue);
+}
+
+export function toKoreanDateWithWeekday(iso: string): string {
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    month: "numeric",
+    day: "numeric",
+    weekday: "short",
+  }).format(toSeoulDate(iso));
+}
+
 export function toKoreanDateTime(iso: string): string {
   return new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
@@ -43,5 +58,5 @@ export function toKoreanDateTime(iso: string): string {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  }).format(new Date(iso));
+  }).format(toSeoulDate(iso));
 }

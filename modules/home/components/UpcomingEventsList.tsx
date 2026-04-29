@@ -1,4 +1,5 @@
 import type { UpcomingScheduleItem } from "@/modules/home/upcoming-schedule";
+import { toKoreanDateTime, toKoreanDateWithWeekday } from "@/modules/home/utils/date";
 import { SectionLabel } from "@/modules/ui/components";
 
 interface UpcomingEventsListProps {
@@ -6,23 +7,11 @@ interface UpcomingEventsListProps {
 }
 
 function formatEventTime(event: UpcomingScheduleItem): string {
-  const date = new Date(event.startTime);
   if (event.allDay) {
-    return new Intl.DateTimeFormat("ko-KR", {
-      month: "numeric",
-      day: "numeric",
-      weekday: "short",
-      timeZone: "Asia/Seoul",
-    }).format(date);
+    return toKoreanDateWithWeekday(event.startTime);
   }
 
-  return new Intl.DateTimeFormat("ko-KR", {
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Seoul",
-  }).format(date);
+  return toKoreanDateTime(event.startTime);
 }
 
 // Card list of family events and calendar overrides in the next week.

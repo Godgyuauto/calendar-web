@@ -9,11 +9,13 @@ import { AddEventSheet } from "@/modules/calendar-ui/AddEventSheet";
 import {
   buildDayHref,
   buildMonthHref,
+  buildWeekHref,
   offsetMonth,
   type ViewMode,
 } from "@/modules/calendar-ui/calendar-url-state";
 import { DayAgenda } from "@/modules/calendar-ui/DayAgenda";
 import { MonthGrid } from "@/modules/calendar-ui/MonthGrid";
+import { WeekAgenda } from "@/modules/calendar-ui/WeekAgenda";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -97,7 +99,22 @@ export function CalendarPageClient({
       );
     }
   };
-
+  const changeFocusedWeek = (dateKey: string) => {
+    setFocusedDate(dateKey);
+    const [year, month] = dateKey.split("-").map(Number);
+    if (year !== activeYear || month !== activeMonth) {
+      router.replace(
+        buildWeekHref(pathname, new URLSearchParams(searchParams.toString()), dateKey),
+        { scroll: false },
+      );
+    }
+  };
+  const openDateSheet = (dateKey: string, overrideId?: string) => {
+    setFabOpen(false);
+    setSelectedOverrideId(overrideId ?? null);
+    setFocusedDate(dateKey);
+    setSelectedDate(dateKey);
+  };
   return (
     <>
       <div className="px-4 pb-3">
@@ -143,17 +160,17 @@ export function CalendarPageClient({
           calendarCells={calendarCells}
           overrides={monthOverrides}
           onChangeDate={changeFocusedDate}
-          onOpenDateSheet={(dateKey, overrideId) => {
-            setFabOpen(false);
-            setSelectedOverrideId(overrideId ?? null);
-            setFocusedDate(dateKey);
-            setSelectedDate(dateKey);
-          }}
+          onOpenDateSheet={openDateSheet}
         />
       ) : (
-        <div className="mx-5 rounded-[14px] bg-white py-10 text-center text-[13px] text-[#8e8e93]">
-          주간 뷰는 준비 중입니다.
-        </div>
+        <WeekAgenda
+          dateKey={focusedDate}
+          todayKey={todayKey}
+          calendarCells={calendarCells}
+          overrides={monthOverrides}
+          onChangeDate={changeFocusedWeek}
+          onOpenDateSheet={openDateSheet}
+        />
       )}
 
       <button

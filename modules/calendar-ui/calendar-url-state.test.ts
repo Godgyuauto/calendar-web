@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildDayHref,
   buildMonthHref,
+  buildWeekHref,
   normalizeDateKey,
   offsetMonth,
   parseViewMode,
@@ -36,6 +37,13 @@ describe("calendar URL state", () => {
     const params = new URLSearchParams("view=month&foo=bar");
     expect(buildDayHref("/calendar", params, "2026-05-04")).toBe(
       "/calendar?view=day&foo=bar&year=2026&month=5&day=2026-05-04",
+    );
+  });
+
+  it("builds week href that preserves week view across month changes", () => {
+    const params = new URLSearchParams("view=month&foo=bar");
+    expect(buildWeekHref("/calendar", params, "2026-05-04")).toBe(
+      "/calendar?view=week&foo=bar&year=2026&month=5&day=2026-05-04",
     );
   });
 });

@@ -62,3 +62,19 @@ export function buildDayHref(
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }
+
+export function buildWeekHref(
+  pathname: string,
+  baseParams: URLSearchParams,
+  dateKey: string,
+): string {
+  const [year, month] = dateKey.split("-").map(Number);
+  const params = new URLSearchParams(baseParams.toString());
+  params.set("year", String(year));
+  params.set("month", String(month));
+  params.set("view", "week");
+  params.set("day", dateKey);
+  params.delete("add");
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}

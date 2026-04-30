@@ -12,7 +12,7 @@ interface DayAgendaProps {
   calendarCells: CalendarCell[];
   overrides: ShiftOverride[];
   onChangeDate: (dateKey: string) => void;
-  onOpenDateSheet: (dateKey: string) => void;
+  onOpenDateSheet: (dateKey: string, overrideId?: string) => void;
 }
 
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -110,7 +110,7 @@ export function DayAgenda({
             <button
               type="button"
               key={item.id}
-              onClick={() => onOpenDateSheet(dateKey)}
+              onClick={() => onOpenDateSheet(dateKey, item.overrideId)}
               className="w-full rounded-[13px] border border-[#e5e5ea] bg-white px-3.5 py-3 text-left active:bg-[#f7f8fb]"
             >
               <div className="flex items-start justify-between gap-3">

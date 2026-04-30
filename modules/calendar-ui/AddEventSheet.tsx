@@ -31,6 +31,7 @@ interface AddEventSheetProps {
   onSaved: () => void;
   defaultDate: string;
   initialTab: "existing" | "create";
+  selectedOverrideId?: string | null;
 }
 
 export function AddEventSheet({
@@ -39,6 +40,7 @@ export function AddEventSheet({
   onSaved,
   defaultDate,
   initialTab,
+  selectedOverrideId,
 }: AddEventSheetProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -49,6 +51,7 @@ export function AddEventSheet({
   const { existingOverride, existingLoading, existingError } = useExistingOverride({
     open,
     dateKey: defaultDate,
+    selectedOverrideId,
   });
   const formSeed = toStructuredOverrideFormState({
     dateKey: defaultDate,

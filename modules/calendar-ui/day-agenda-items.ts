@@ -6,6 +6,7 @@ import type { ShiftOverride } from "@/modules/shift";
 
 export interface DayAgendaItem {
   id: string;
+  overrideId?: string;
   title: string;
   typeLabel: string;
   shiftLabel: string;
@@ -90,6 +91,7 @@ export function buildDayAgendaItems(
         display.shiftChange === "KEEP" ? "근무조 유지" : `근무조 ${display.shiftChange}`;
       return {
         id: override.id ?? `${override.date}:${index}`,
+        overrideId: override.id,
         title,
         typeLabel: typeOption.label,
         shiftLabel,

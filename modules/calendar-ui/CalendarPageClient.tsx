@@ -27,7 +27,6 @@ interface CalendarPageClientProps {
   initialSelectedDateKey?: string;
 }
 
-// Owns calendar view state, month links, and the AddEventSheet state.
 const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function offsetMonth(year: number, month: number, offset: number): { year: number; month: number } {
@@ -82,6 +81,7 @@ export function CalendarPageClient({
   const [view, setView] = useState<ViewMode>("month");
   const [fabOpen, setFabOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(initialSelectedDateKey ?? null);
+  const [selectedOverrideId, setSelectedOverrideId] = useState<string | null>(null);
   const [focusedDate, setFocusedDate] = useState(initialSelectedDateKey ?? todayKey);
   const selectedDateFromQuery = normalizeDateKey(searchParams.get("add"));
   const sheetDate = selectedDate ?? todayKey;
@@ -106,11 +106,11 @@ export function CalendarPageClient({
   const closeSheet = () => {
     setFabOpen(false);
     setSelectedDate(null);
+    setSelectedOverrideId(null);
     if (!selectedDateFromQuery) {
       return;
     }
 
-    // Remove only the day-tap marker so month context stays untouched.
     const params = new URLSearchParams(searchParams.toString());
     params.delete("add");
     const query = params.toString();
@@ -148,6 +148,7 @@ export function CalendarPageClient({
           selectedDateKey={selectedDate ?? undefined}
           onSelectDate={(dateKey) => {
             setFabOpen(false);
+            setSelectedOverrideId(null);
             setFocusedDate(dateKey);
             setSelectedDate(dateKey);
           }}
@@ -159,8 +160,9 @@ export function CalendarPageClient({
           calendarCells={calendarCells}
           overrides={monthOverrides}
           onChangeDate={setFocusedDate}
-          onOpenDateSheet={(dateKey) => {
+          onOpenDateSheet={(dateKey, overrideId) => {
             setFabOpen(false);
+            setSelectedOverrideId(overrideId ?? null);
             setFocusedDate(dateKey);
             setSelectedDate(dateKey);
           }}
@@ -176,6 +178,7 @@ export function CalendarPageClient({
         aria-label="일정 추가"
         onClick={() => {
           setSelectedDate(null);
+          setSelectedOverrideId(null);
           setFabOpen(true);
         }}
         className="fixed bottom-20 right-5 z-20 flex h-14 w-14 touch-manipulation items-center justify-center rounded-full bg-[#007AFF] text-white shadow-[0_6px_18px_rgba(0,122,255,0.35)] active:scale-[0.98]"
@@ -184,12 +187,13 @@ export function CalendarPageClient({
       </button>
 
       <AddEventSheet
-        key={`${sheetDate}:${selectedDate ? "existing" : "create"}:${sheetOpen ? "open" : "closed"}`}
+        key={`${sheetDate}:${selectedOverrideId ?? "day"}:${sheetOpen ? "open" : "closed"}`}
         open={sheetOpen}
         onClose={closeSheet}
         onSaved={closeSheet}
         defaultDate={sheetDate}
         initialTab={selectedDate ? "existing" : "create"}
+        selectedOverrideId={selectedOverrideId}
       />
     </>
   );

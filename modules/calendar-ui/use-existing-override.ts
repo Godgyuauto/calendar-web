@@ -18,6 +18,7 @@ export interface ExistingOverride {
 interface UseExistingOverrideInput {
   open: boolean;
   dateKey: string;
+  selectedOverrideId?: string | null;
 }
 
 interface UseExistingOverrideResult {
@@ -35,10 +36,29 @@ function toTimestamp(value?: string): number {
   return Number.isNaN(unix) ? 0 : unix;
 }
 
+export function pickExistingOverride(
+  overrides: ExistingOverride[],
+  dateKey: string,
+  selectedOverrideId?: string | null,
+): ExistingOverride | null {
+  const dayOverrides = overrides.filter((override) => override.date === dateKey);
+  if (selectedOverrideId) {
+    return dayOverrides.find((override) => override.id === selectedOverrideId) ?? null;
+  }
+
+  return (
+    dayOverrides
+      .slice()
+      .sort((left, right) => toTimestamp(right.createdAt) - toTimestamp(left.createdAt))[0] ??
+    null
+  );
+}
+
 // Reads current-month overrides and picks the selected day entry.
 export function useExistingOverride({
   open,
   dateKey,
+  selectedOverrideId,
 }: UseExistingOverrideInput): UseExistingOverrideResult {
   const [existingOverride, setExistingOverride] = useState<ExistingOverride | null>(null);
   const [existingLoading, setExistingLoading] = useState(false);
@@ -80,14 +100,11 @@ export function useExistingOverride({
         }
 
         const body = (await response.json()) as { overrides?: ExistingOverride[] };
-        // Keep the same "latest createdAt wins" policy used by shift resolver.
-        const matched =
-          (body.overrides ?? [])
-            .filter((override) => override.date === dateKey)
-            .slice()
-            .sort(
-              (left, right) => toTimestamp(right.createdAt) - toTimestamp(left.createdAt),
-            )[0] ?? null;
+        const matched = pickExistingOverride(
+          body.overrides ?? [],
+          dateKey,
+          selectedOverrideId,
+        );
         if (!canceled) {
           setExistingOverride(matched);
         }
@@ -107,7 +124,7 @@ export function useExistingOverride({
     return () => {
       canceled = true;
     };
-  }, [dateKey, open]);
+  }, [dateKey, open, selectedOverrideId]);
 
   return {
     existingOverride,

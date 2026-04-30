@@ -118,6 +118,18 @@ calendar-web/
 5. **라우트 파일 라인 상한**: `modules/family/api/*-route.ts` 200줄, `modules/shift/api/*-route.ts` 80줄. 넘어가면 로직을 repository/validator로 분리하고 라우트는 얇게 유지.
 6. **검증 루프**: API를 추가/수정한 뒤에는 반드시 `pnpm run verify:release`로 `lint → typecheck → build → smoke`를 통과시킵니다. smoke는 읽기 전용이므로 mutation 엔드포인트는 별도로 수동 검증.
 
+## 작업 루프 (TDD 기반 스마트 코딩)
+기본 개발 단위는 **작은 변경 → 테스트 → 린트 → 커밋 → 반복**입니다. 여러 기능을 한 번에 묶지 말고, 한 커밋에는 하나의 의도만 담으세요.
+
+1. **작은 변경 1개**: 기능·버그·문서 중 하나의 목적만 선택하고, 가능한 한 파일 1~2개 단위로 쪼갭니다.
+2. **테스트 실행**: 변경 범위에 맞는 targeted test를 먼저 실행합니다. 순수 함수나 회귀 위험이 있으면 테스트를 추가한 뒤 구현합니다.
+3. **린트/타입 체크**: 최소 `pnpm run lint`, TypeScript 변경이면 `pnpm run typecheck`를 통과시킵니다.
+4. **배포 전 검증**: 사용자에게 보이는 기능, API, PWA, auth 흐름을 건드렸으면 `pnpm run verify:release:auth`까지 통과시킵니다. 일반 배포 전에는 `pnpm run verify:release`를 사용합니다.
+5. **커밋**: 검증이 통과한 뒤 Conventional Commits(`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`)로 커밋합니다.
+6. **반복**: 다음 기능은 새 루프로 시작합니다. 실패하면 우회하지 말고 원인을 고친 뒤 같은 검증을 다시 실행합니다.
+
+문서만 수정한 경우 테스트가 직접 관련 없을 수 있습니다. 이때도 최소한 `pnpm run lint` 또는 영향 범위가 없음을 확인하고 커밋 메시지에 `docs:`를 사용합니다.
+
 ## 빌드/테스트 (Build & Test)
 모든 명령어는 `calendar-web/` 폴더에서 **pnpm**으로 실행합니다:
 

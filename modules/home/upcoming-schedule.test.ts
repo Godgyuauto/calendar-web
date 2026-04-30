@@ -58,6 +58,18 @@ describe("buildUpcomingScheduleItems", () => {
     });
 
     expect(items.map((item) => item.title)).toEqual(["회식", "교육"]);
+    expect(items[0]).toMatchObject({
+      id: "override:override-1",
+      sourceId: "override-1",
+      dateKey: "2026-04-30",
+      source: "override",
+    });
+    expect(items[1]).toMatchObject({
+      id: "event:event-1",
+      sourceId: "event-1",
+      dateKey: "2026-04-30",
+      source: "event",
+    });
   });
 
   it("excludes routine events and items outside the seven-day window", () => {
@@ -119,6 +131,13 @@ describe("buildUpcomingScheduleItems", () => {
     });
 
     expect(items[0]?.startTime).toBe("2026-05-04T09:00");
+    expect(items[0]?.endTime).toBe("2026-05-04T15:00");
     expect(items[0]?.allDay).toBe(false);
+    expect(items[0]).toMatchObject({
+      eventType: "vacation",
+      shiftChange: "OFF",
+      memo: "세종 베어트리파크",
+      remindAt: null,
+    });
   });
 });

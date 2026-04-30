@@ -1,12 +1,23 @@
 import type { FamilyEvent } from "@/modules/family";
-import { parseStructuredOverrideNote } from "@/modules/family/domain/structured-override-note";
+import {
+  parseStructuredOverrideNote,
+  type ShiftChange,
+} from "@/modules/family/domain/structured-override-note";
 import type { ShiftOverride } from "@/modules/shift";
+import type { OverrideType } from "@/modules/shift";
 
 export interface UpcomingScheduleItem {
   id: string;
+  sourceId: string;
   title: string;
+  dateKey: string;
   startTime: string;
+  endTime: string | null;
   allDay: boolean;
+  eventType: OverrideType | null;
+  shiftChange: ShiftChange | null;
+  memo: string;
+  remindAt: string | null;
   source: "event" | "override";
 }
 
@@ -28,20 +39,43 @@ function toSeoulStartIso(dateKey: string): string {
   return `${dateKey}T00:00:00+09:00`;
 }
 
-function getOverrideStartTime(override: ShiftOverride): string {
-  const note = parseStructuredOverrideNote(override.note, {
-    eventType: override.overrideType,
-    shiftChange: override.overrideShift ?? "KEEP",
-  });
-  return note?.start_at ?? override.startTime ?? toSeoulStartIso(override.date);
+function toSeoulDateKeyFromIso(value: string): string {
+  const hasTimeZone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(value);
+  const date = new Date(hasTimeZone ? value : `${value}+09:00`);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
 }
 
-function isOverrideAllDay(override: ShiftOverride): boolean {
-  const note = parseStructuredOverrideNote(override.note, {
+function getOverrideNote(override: ShiftOverride) {
+  return parseStructuredOverrideNote(override.note, {
     eventType: override.overrideType,
     shiftChange: override.overrideShift ?? "KEEP",
   });
-  return note?.all_day ?? override.startTime === null;
+}
+
+function toOverrideUpcomingItem(override: ShiftOverride): UpcomingScheduleItem {
+  const note = getOverrideNote(override);
+  const eventType = note?.event_type ?? override.overrideType;
+  const shiftChange = note?.shift_change ?? override.overrideShift ?? "KEEP";
+  const sourceId = override.id ?? `${override.date}:${override.label}`;
+  return {
+    id: `override:${sourceId}`,
+    sourceId,
+    title: note?.title.trim() || override.label,
+    dateKey: override.date,
+    startTime: note?.start_at ?? override.startTime ?? toSeoulStartIso(override.date),
+    endTime: note?.end_at ?? override.endTime ?? null,
+    allDay: note?.all_day ?? override.startTime === null,
+    eventType,
+    shiftChange,
+    memo: note?.memo ?? "",
+    remindAt: note?.remind_at ?? null,
+    source: "override",
+  };
 }
 
 export function getUpcomingWindow(todayKey: string, days = 7): UpcomingWindow {
@@ -68,9 +102,16 @@ export function buildUpcomingScheduleItems(input: {
     )
     .map((event) => ({
       id: `event:${event.id}`,
+      sourceId: event.id,
       title: event.title,
+      dateKey: toSeoulDateKeyFromIso(event.startTime),
       startTime: event.startTime,
+      endTime: event.endTime,
       allDay: false,
+      eventType: null,
+      shiftChange: null,
+      memo: "",
+      remindAt: null,
       source: "event" as const,
     }));
 
@@ -80,13 +121,7 @@ export function buildUpcomingScheduleItems(input: {
         override.date >= input.window.startDateKey &&
         override.date < input.window.endDateKey,
     )
-    .map((override) => ({
-      id: `override:${override.id}`,
-      title: override.label,
-      startTime: getOverrideStartTime(override),
-      allDay: isOverrideAllDay(override),
-      source: "override" as const,
-    }));
+    .map(toOverrideUpcomingItem);
 
   return [...eventItems, ...overrideItems].sort((left, right) =>
     left.startTime.localeCompare(right.startTime),

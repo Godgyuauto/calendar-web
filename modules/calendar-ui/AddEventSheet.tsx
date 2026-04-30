@@ -31,6 +31,7 @@ interface AddEventSheetProps {
   onSaved: () => void;
   defaultDate: string;
   initialTab: "existing" | "create";
+  initialSubmitMode?: "create" | "update";
   selectedOverrideId?: string | null;
 }
 
@@ -40,6 +41,7 @@ export function AddEventSheet({
   onSaved,
   defaultDate,
   initialTab,
+  initialSubmitMode = "create",
   selectedOverrideId,
 }: AddEventSheetProps) {
   const router = useRouter();
@@ -47,7 +49,7 @@ export function AddEventSheet({
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<AddEventSheetTab>(initialTab);
-  const [submitMode, setSubmitMode] = useState<"create" | "update">("create");
+  const [submitMode, setSubmitMode] = useState<"create" | "update">(initialSubmitMode);
   const { existingOverride, existingLoading, existingError } = useExistingOverride({
     open,
     dateKey: defaultDate,

@@ -6,6 +6,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ShiftOverride } from "@/modules/shift";
 import type { CalendarCell } from "@/modules/calendar";
 import { AddEventSheet } from "@/modules/calendar-ui/AddEventSheet";
+import {
+  buildDayHref,
+  buildMonthHref,
+  offsetMonth,
+  type ViewMode,
+} from "@/modules/calendar-ui/calendar-url-state";
 import { DayAgenda } from "@/modules/calendar-ui/DayAgenda";
 import { MonthGrid } from "@/modules/calendar-ui/MonthGrid";
 import {
@@ -15,8 +21,6 @@ import {
   SegmentControl,
 } from "@/modules/ui/components";
 
-type ViewMode = "month" | "week" | "day";
-
 interface CalendarPageClientProps {
   monthLabel: string;
   activeYear: number;
@@ -24,45 +28,9 @@ interface CalendarPageClientProps {
   todayKey: string;
   calendarCells: CalendarCell[];
   monthOverrides: ShiftOverride[];
+  initialView: ViewMode;
+  initialFocusedDateKey?: string;
   initialSelectedDateKey?: string;
-}
-
-const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-function offsetMonth(year: number, month: number, offset: number): { year: number; month: number } {
-  const date = new Date(Date.UTC(year, month - 1 + offset, 1));
-  return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 };
-}
-
-function buildMonthHref(
-  pathname: string,
-  baseParams: URLSearchParams,
-  year: number,
-  month: number,
-): string {
-  const params = new URLSearchParams(baseParams.toString());
-  params.set("year", String(year));
-  params.set("month", String(month));
-  params.delete("add");
-  const query = params.toString();
-  return query ? `${pathname}?${query}` : pathname;
-}
-
-function normalizeDateKey(rawDate: string | null): string | null {
-  if (!rawDate || !DATE_KEY_PATTERN.test(rawDate)) {
-    return null;
-  }
-
-  const [year, month, day] = rawDate.split("-").map(Number);
-  const parsed = new Date(Date.UTC(year, month - 1, day));
-  if (
-    parsed.getUTCFullYear() !== year ||
-    parsed.getUTCMonth() + 1 !== month ||
-    parsed.getUTCDate() !== day
-  ) {
-    return null;
-  }
-  return rawDate;
 }
 
 export function CalendarPageClient({
@@ -72,17 +40,21 @@ export function CalendarPageClient({
   todayKey,
   calendarCells,
   monthOverrides,
+  initialView,
+  initialFocusedDateKey,
   initialSelectedDateKey,
 }: CalendarPageClientProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [view, setView] = useState<ViewMode>("month");
+  const [view, setView] = useState<ViewMode>(initialView);
   const [fabOpen, setFabOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(initialSelectedDateKey ?? null);
   const [selectedOverrideId, setSelectedOverrideId] = useState<string | null>(null);
-  const [focusedDate, setFocusedDate] = useState(initialSelectedDateKey ?? todayKey);
-  const selectedDateFromQuery = normalizeDateKey(searchParams.get("add"));
+  const [focusedDate, setFocusedDate] = useState(
+    initialFocusedDateKey ?? initialSelectedDateKey ?? todayKey,
+  );
+  const selectedDateFromQuery = initialSelectedDateKey;
   const sheetDate = selectedDate ?? todayKey;
   const sheetOpen = fabOpen || selectedDate !== null;
 
@@ -113,6 +85,17 @@ export function CalendarPageClient({
     params.delete("add");
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
+
+  const changeFocusedDate = (dateKey: string) => {
+    setFocusedDate(dateKey);
+    const [year, month] = dateKey.split("-").map(Number);
+    if (year !== activeYear || month !== activeMonth) {
+      router.replace(
+        buildDayHref(pathname, new URLSearchParams(searchParams.toString()), dateKey),
+        { scroll: false },
+      );
+    }
   };
 
   return (
@@ -159,7 +142,7 @@ export function CalendarPageClient({
           todayKey={todayKey}
           calendarCells={calendarCells}
           overrides={monthOverrides}
-          onChangeDate={setFocusedDate}
+          onChangeDate={changeFocusedDate}
           onOpenDateSheet={(dateKey, overrideId) => {
             setFabOpen(false);
             setSelectedOverrideId(overrideId ?? null);

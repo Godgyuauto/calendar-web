@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ensureAuthenticatedOrRedirect } from "@/modules/auth/server-session";
+import { normalizeDateKey, parseViewMode } from "@/modules/calendar-ui/calendar-url-state";
 import { CalendarPageClient } from "@/modules/calendar-ui/CalendarPageClient";
 import { getHomePageData } from "@/modules/home/home-page-data";
 import { getSeoulMonth, getSeoulYear, toSeoulDateKey } from "@/modules/home/utils/date";
@@ -11,7 +12,6 @@ function formatMonthLabel(year: number, month: number): string {
 
 type QueryValue = string | string[] | undefined;
 type SearchParamsInput = Record<string, QueryValue>;
-const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 interface CalendarMonthPageProps {
   searchParams?: Promise<SearchParamsInput>;
@@ -19,24 +19,6 @@ interface CalendarMonthPageProps {
 
 function getQueryValue(value: QueryValue): string | undefined {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function normalizeDateKey(rawDate: string | undefined): string | undefined {
-  if (!rawDate || !DATE_KEY_PATTERN.test(rawDate)) {
-    return undefined;
-  }
-
-  const [year, month, day] = rawDate.split("-").map(Number);
-  const parsed = new Date(Date.UTC(year, month - 1, day));
-  if (
-    parsed.getUTCFullYear() !== year ||
-    parsed.getUTCMonth() + 1 !== month ||
-    parsed.getUTCDate() !== day
-  ) {
-    return undefined;
-  }
-
-  return rawDate;
 }
 
 function parseCalendarMonth(params: SearchParamsInput, fallbackDate: Date): Date {
@@ -73,6 +55,8 @@ export default async function CalendarMonthPage({
   const resolvedSearchParams = (await searchParams) ?? {};
   const monthDate = parseCalendarMonth(resolvedSearchParams, now);
   const selectedDateKey = normalizeDateKey(getQueryValue(resolvedSearchParams.add));
+  const focusedDateKey = normalizeDateKey(getQueryValue(resolvedSearchParams.day));
+  const initialView = parseViewMode(getQueryValue(resolvedSearchParams.view));
   const data = await getHomePageData(monthDate);
   const todayKey = toSeoulDateKey(now);
 
@@ -107,6 +91,8 @@ export default async function CalendarMonthPage({
         todayKey={todayKey}
         calendarCells={data.calendarCells}
         monthOverrides={data.monthOverrides}
+        initialView={initialView}
+        initialFocusedDateKey={focusedDateKey}
         initialSelectedDateKey={selectedDateKey}
       />
     </TabShell>

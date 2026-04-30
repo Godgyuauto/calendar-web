@@ -62,7 +62,6 @@ function normalizeDateKey(rawDate: string | null): string | null {
   ) {
     return null;
   }
-
   return rawDate;
 }
 
@@ -89,16 +88,15 @@ export function CalendarPageClient({
 
   const prevMonth = offsetMonth(activeYear, activeMonth, -1);
   const nextMonth = offsetMonth(activeYear, activeMonth, 1);
-  const baseParams = new URLSearchParams(searchParams.toString());
   const prevMonthHref = buildMonthHref(
     pathname,
-    baseParams,
+    new URLSearchParams(searchParams.toString()),
     prevMonth.year,
     prevMonth.month,
   );
   const nextMonthHref = buildMonthHref(
     pathname,
-    baseParams,
+    new URLSearchParams(searchParams.toString()),
     nextMonth.year,
     nextMonth.month,
   );
@@ -131,15 +129,17 @@ export function CalendarPageClient({
         />
       </div>
 
-      <div className="flex items-center justify-between px-5 pb-2">
-        <Link href={prevMonthHref} aria-label="이전 달" className="text-[#8e8e93]">
-          <ChevronLeftIcon size={22} />
-        </Link>
-        <h2 className="text-[17px] font-bold text-[#1a1a1a]">{monthLabel}</h2>
-        <Link href={nextMonthHref} aria-label="다음 달" className="text-[#8e8e93]">
-          <ChevronRightIcon size={22} />
-        </Link>
-      </div>
+      {view !== "day" ? (
+        <div className="flex items-center justify-between px-5 pb-2">
+          <Link href={prevMonthHref} aria-label="이전 달" className="text-[#8e8e93]">
+            <ChevronLeftIcon size={22} />
+          </Link>
+          <h2 className="text-[17px] font-bold text-[#1a1a1a]">{monthLabel}</h2>
+          <Link href={nextMonthHref} aria-label="다음 달" className="text-[#8e8e93]">
+            <ChevronRightIcon size={22} />
+          </Link>
+        </div>
+      ) : null}
 
       {view === "month" ? (
         <MonthGrid

@@ -30,7 +30,7 @@ function addDays(dateKey: string, offset: number): string {
 function formatDateLabel(dateKey: string): string {
   const [year, month, day] = dateKey.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
-  return `${month}월 ${day}일 (${WEEKDAY_LABELS[date.getUTCDay()]})`;
+  return `${year}년 ${month}월 ${day}일 (${WEEKDAY_LABELS[date.getUTCDay()]})`;
 }
 
 export function DayAgenda({

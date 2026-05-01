@@ -23,6 +23,7 @@ interface UseExistingOverrideInput {
 
 interface UseExistingOverrideResult {
   existingOverride: ExistingOverride | null;
+  existingOverrides: ExistingOverride[];
   existingLoading: boolean;
   existingError: string | null;
 }
@@ -41,17 +42,21 @@ export function pickExistingOverride(
   dateKey: string,
   selectedOverrideId?: string | null,
 ): ExistingOverride | null {
-  const dayOverrides = overrides.filter((override) => override.date === dateKey);
+  const dayOverrides = listExistingOverrides(overrides, dateKey);
   if (selectedOverrideId) {
     return dayOverrides.find((override) => override.id === selectedOverrideId) ?? null;
   }
 
-  return (
-    dayOverrides
-      .slice()
-      .sort((left, right) => toTimestamp(right.createdAt) - toTimestamp(left.createdAt))[0] ??
-    null
-  );
+  return dayOverrides[0] ?? null;
+}
+
+export function listExistingOverrides(
+  overrides: ExistingOverride[],
+  dateKey: string,
+): ExistingOverride[] {
+  return overrides
+    .filter((override) => override.date === dateKey)
+    .sort((left, right) => toTimestamp(right.createdAt) - toTimestamp(left.createdAt));
 }
 
 // Reads current-month overrides and picks the selected day entry.
@@ -61,6 +66,7 @@ export function useExistingOverride({
   selectedOverrideId,
 }: UseExistingOverrideInput): UseExistingOverrideResult {
   const [existingOverride, setExistingOverride] = useState<ExistingOverride | null>(null);
+  const [existingOverrides, setExistingOverrides] = useState<ExistingOverride[]>([]);
   const [existingLoading, setExistingLoading] = useState(false);
   const [existingError, setExistingError] = useState<string | null>(null);
 
@@ -82,6 +88,7 @@ export function useExistingOverride({
       setExistingError(null);
       // Clear previous-day selection immediately so the sheet never reuses stale detail.
       setExistingOverride(null);
+      setExistingOverrides([]);
       try {
         const response = await fetch(
           `/api/overrides?year=${year}&month=${month}&scope=mine`,
@@ -95,11 +102,13 @@ export function useExistingOverride({
           if (!canceled) {
             setExistingError("기존 일정을 불러오지 못했습니다.");
             setExistingOverride(null);
+            setExistingOverrides([]);
           }
           return;
         }
 
         const body = (await response.json()) as { overrides?: ExistingOverride[] };
+        const matchedList = listExistingOverrides(body.overrides ?? [], dateKey);
         const matched = pickExistingOverride(
           body.overrides ?? [],
           dateKey,
@@ -107,11 +116,13 @@ export function useExistingOverride({
         );
         if (!canceled) {
           setExistingOverride(matched);
+          setExistingOverrides(matchedList);
         }
       } catch {
         if (!canceled) {
           setExistingError("기존 일정 조회 중 오류가 발생했습니다.");
           setExistingOverride(null);
+          setExistingOverrides([]);
         }
       } finally {
         if (!canceled) {
@@ -128,6 +139,7 @@ export function useExistingOverride({
 
   return {
     existingOverride,
+    existingOverrides,
     existingLoading,
     existingError,
   };

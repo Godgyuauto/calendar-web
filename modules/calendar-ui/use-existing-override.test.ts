@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ExistingOverride } from "./use-existing-override";
-import { pickExistingOverride } from "./use-existing-override";
+import { listExistingOverrides, pickExistingOverride } from "./use-existing-override";
 
 function override(input: Partial<ExistingOverride>): ExistingOverride {
   return {
@@ -47,5 +47,20 @@ describe("pickExistingOverride", () => {
     );
 
     expect(selected?.id).toBe("newer");
+  });
+});
+
+describe("listExistingOverrides", () => {
+  it("returns every override for the selected day", () => {
+    const selected = listExistingOverrides(
+      [
+        override({ id: "picnic", createdAt: "2026-05-04T09:00:00+09:00" }),
+        override({ id: "other-day", date: "2026-05-05" }),
+        override({ id: "camping", createdAt: "2026-05-04T10:00:00+09:00" }),
+      ],
+      "2026-05-04",
+    );
+
+    expect(selected.map((item) => item.id)).toEqual(["camping", "picnic"]);
   });
 });

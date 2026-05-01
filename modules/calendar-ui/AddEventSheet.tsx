@@ -9,6 +9,7 @@ import {
   type AddEventSheetTab,
 } from "@/modules/calendar-ui/AddEventSheetTabs";
 import { useExistingOverride } from "@/modules/calendar-ui/use-existing-override";
+import type { ExistingOverride } from "@/modules/calendar-ui/use-existing-override";
 import {
   ExistingOverrideSection,
 } from "@/modules/calendar-ui/AddEventSheetSections";
@@ -50,16 +51,19 @@ export function AddEventSheet({
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<AddEventSheetTab>(initialTab);
   const [submitMode, setSubmitMode] = useState<"create" | "update">(initialSubmitMode);
-  const { existingOverride, existingLoading, existingError } = useExistingOverride({
-    open,
-    dateKey: defaultDate,
-    selectedOverrideId,
-  });
+  const [draftOverride, setDraftOverride] = useState<ExistingOverride | null>(null);
+  const { existingOverride, existingOverrides, existingLoading, existingError } =
+    useExistingOverride({
+      open,
+      dateKey: defaultDate,
+      selectedOverrideId,
+    });
+  const formOverride = draftOverride ?? existingOverride;
   const formSeed = toStructuredOverrideFormState({
     dateKey: defaultDate,
-    override: existingOverride ?? undefined,
+    override: formOverride ?? undefined,
   });
-  const formSeedKey = `${defaultDate}:${existingOverride?.id ?? "new"}`;
+  const formSeedKey = `${defaultDate}:${formOverride?.id ?? "new"}`;
 
   const submit = async (form: StructuredOverrideFormState) => {
     if (saving || deleting) {
@@ -71,7 +75,7 @@ export function AddEventSheet({
       return;
     }
     const payload = toOverrideSubmitPayload(defaultDate, form);
-    const shouldUpdate = submitMode === "update" && Boolean(existingOverride?.id);
+    const shouldUpdate = submitMode === "update" && Boolean(formOverride?.id);
     setSaving(true);
     setError(null);
     try {
@@ -80,8 +84,8 @@ export function AddEventSheet({
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          shouldUpdate && existingOverride
-            ? { ...payload, id: existingOverride.id }
+          shouldUpdate && formOverride
+            ? { ...payload, id: formOverride?.id }
             : payload,
         ),
       });
@@ -99,11 +103,11 @@ export function AddEventSheet({
     }
   };
 
-  const deleteExisting = async () => {
-    if (!existingOverride || deleting || saving) {
+  const deleteExisting = async (target: ExistingOverride) => {
+    if (deleting || saving) {
       return;
     }
-    const deleteId = existingOverride.id;
+    const deleteId = target.id;
     setDeleting(true);
     setError(null);
     onSaved();
@@ -129,6 +133,7 @@ export function AddEventSheet({
     setActiveTab(tab);
     if (tab === "create") {
       setSubmitMode("create");
+      setDraftOverride(null);
     }
     setError(null);
   };
@@ -144,13 +149,15 @@ export function AddEventSheet({
           <ExistingOverrideSection
             existingLoading={existingLoading}
             existingOverride={existingOverride}
+            existingOverrides={existingOverrides}
             existingError={existingError}
             onSwitchToCreate={() => {
               setActiveTab("create");
               setSubmitMode("create");
               setError(null);
             }}
-            onEditExisting={() => {
+            onEditExisting={(override) => {
+              setDraftOverride(override);
               setActiveTab("create");
               setSubmitMode("update");
               setError(null);

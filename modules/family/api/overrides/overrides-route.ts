@@ -14,6 +14,7 @@ import {
   responseForNoContent,
   responseForSuccess,
 } from "../_common/route-log-response";
+import { broadcastFamilyCalendarChange } from "../_common/family-realtime-broadcast";
 import { dispatchFamilyPush } from "../push/push-notify-dispatch";
 import { dispatchQueuedNotificationCleanupForOverride } from "../notifications/notification-jobs-dispatch";
 import { handleOverrideCreate, handleOverrideUpdate } from "./override-mutation-route";
@@ -107,6 +108,7 @@ export async function DELETE(request: NextRequest) {
     invalidateHomeFamilyCacheForFamily(auth.familyId);
     revalidatePath("/");
     revalidatePath("/calendar");
+    await broadcastFamilyCalendarChange(auth, "override");
 
     return responseForNoContent(logScope, 204, auth);
   } catch (error) {

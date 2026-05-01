@@ -10,6 +10,7 @@ import {
   responseForFailure,
   responseForSuccess,
 } from "../_common/route-log-response";
+import { broadcastFamilyCalendarChange } from "../_common/family-realtime-broadcast";
 import { dispatchFamilyPush } from "../push/push-notify-dispatch";
 import {
   dispatchQueuedNotificationCleanupForOverride,
@@ -39,6 +40,7 @@ async function applyOverrideMutationSideEffects(
   invalidateHomeFamilyCacheForFamily(auth.familyId);
   revalidatePath("/");
   revalidatePath("/calendar");
+  await broadcastFamilyCalendarChange(auth, "override");
 }
 
 function responseForOverrideMutationError(

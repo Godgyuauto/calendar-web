@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ensureAuthenticatedOrRedirect } from "@/modules/auth/server-session";
 import { normalizeDateKey, parseViewMode } from "@/modules/calendar-ui/calendar-url-state";
 import { CalendarPageClient } from "@/modules/calendar-ui/CalendarPageClient";
+import { CalendarRealtimeRefresh } from "@/modules/calendar-ui/CalendarRealtimeRefresh";
 import { getHomePageData } from "@/modules/home/home-page-data";
 import { getSeoulMonth, getSeoulYear, toSeoulDateKey } from "@/modules/home/utils/date";
 import { BellIcon, CalendarIcon, NavBar, TabShell } from "@/modules/ui/components";
@@ -94,6 +95,11 @@ export default async function CalendarMonthPage({
         initialView={initialView}
         initialFocusedDateKey={focusedDateKey}
         initialSelectedDateKey={selectedDateKey}
+      />
+      <CalendarRealtimeRefresh
+        topic={data.realtimeTopic}
+        supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL}
+        supabaseAnonKey={process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}
       />
     </TabShell>
   );

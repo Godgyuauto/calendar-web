@@ -8,6 +8,7 @@ import { readAuthProfileFromSupabase } from "@/modules/family/api/settings";
 import { listFamilyEventsFromSupabase } from "@/modules/family/api/events";
 import { listShiftOverridesFromSupabase } from "@/modules/family/api/overrides";
 import { getFamilyRepositoryFailure } from "@/modules/family/api/_common";
+import { buildFamilyCalendarRealtimeTopic } from "@/modules/family/api/_common/family-realtime-topic";
 import {
   DEFAULT_SHIFT_PATTERN_V1,
   DayShiftSummary,
@@ -35,6 +36,7 @@ export interface HomePageData {
   routineEvents: FamilyEvent[];
   upcomingEvents: UpcomingScheduleItem[];
   calendarCells: CalendarCell[];
+  realtimeTopic: string | null;
 }
 
 interface FamilyReadModel {
@@ -42,6 +44,7 @@ interface FamilyReadModel {
   overrides: ShiftOverride[];
   routineEvents: FamilyEvent[];
   upcomingEvents: UpcomingScheduleItem[];
+  realtimeTopic: string | null;
 }
 
 function emptyFamilyReadModel(): FamilyReadModel {
@@ -50,6 +53,7 @@ function emptyFamilyReadModel(): FamilyReadModel {
     overrides: [],
     routineEvents: [],
     upcomingEvents: [],
+    realtimeTopic: null,
   };
 }
 
@@ -100,6 +104,7 @@ async function readFamilyModelFromSupabase(
   let routineEvents: FamilyEvent[];
   let upcomingEvents: UpcomingScheduleItem[];
   let overrides: ShiftOverride[];
+  const realtimeTopic = buildFamilyCalendarRealtimeTopic(auth.familyId);
   const monthRange = toMonthRangeInSeoul(currentYear, currentMonth);
   const monthStartMs = new Date(monthRange.startInclusive).getTime();
   const monthEndMs = new Date(monthRange.endExclusive).getTime();
@@ -147,6 +152,7 @@ async function readFamilyModelFromSupabase(
     overrides,
     routineEvents,
     upcomingEvents,
+    realtimeTopic,
   };
   writeHomeFamilyCache(cacheKey, model, nowMs);
   return model;
@@ -188,7 +194,7 @@ export async function getHomePageData(now: Date = new Date()): Promise<HomePageD
     routineEvents: familyModel.routineEvents,
     upcomingEvents: familyModel.upcomingEvents,
     calendarCells,
+    realtimeTopic: familyModel.realtimeTopic,
   };
 }
-
 export { DEFAULT_SHIFT_PATTERN_V1 };

@@ -71,4 +71,23 @@ describe("listExistingOverrides", () => {
 
     expect(selected.map((item) => item.id)).toEqual(["picnic", "camping"]);
   });
+
+  it("returns only the selected override when an override id is provided", () => {
+    const selected = listExistingOverrides(
+      [
+        override({
+          id: "picnic",
+          startTime: "2026-05-04T10:00:00+09:00",
+        }),
+        override({
+          id: "camping",
+          startTime: "2026-05-04T18:00:00+09:00",
+        }),
+      ],
+      "2026-05-04",
+      "camping",
+    );
+
+    expect(selected.map((item) => item.id)).toEqual(["camping"]);
+  });
 });

@@ -62,9 +62,11 @@ export function pickExistingOverride(
 export function listExistingOverrides(
   overrides: ExistingOverride[],
   dateKey: string,
+  selectedOverrideId?: string | null,
 ): ExistingOverride[] {
   return overrides
     .filter((override) => override.date === dateKey)
+    .filter((override) => !selectedOverrideId || override.id === selectedOverrideId)
     .sort((left, right) => {
       const leftStart = toStartTimestamp(left.startTime);
       const rightStart = toStartTimestamp(right.startTime);
@@ -124,7 +126,11 @@ export function useExistingOverride({
         }
 
         const body = (await response.json()) as { overrides?: ExistingOverride[] };
-        const matchedList = listExistingOverrides(body.overrides ?? [], dateKey);
+        const matchedList = listExistingOverrides(
+          body.overrides ?? [],
+          dateKey,
+          selectedOverrideId,
+        );
         const matched = pickExistingOverride(
           body.overrides ?? [],
           dateKey,

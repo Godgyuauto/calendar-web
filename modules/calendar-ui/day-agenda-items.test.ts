@@ -78,12 +78,12 @@ describe("buildDayAgendaItems", () => {
     ]);
 
     expect(items[0]).toMatchObject({
-      actionLabel: "상세/관리",
       title: "서윤이 소풍",
       typeLabel: "휴가",
       shiftLabel: "근무조 OFF",
       memo: "세종 베어트리파크",
       timeLabel: "09:00 - 15:00",
     });
+    expect("actionLabel" in items[0]).toBe(false);
   });
 });

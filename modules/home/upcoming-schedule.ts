@@ -1,25 +1,11 @@
 import type { FamilyEvent } from "@/modules/family";
+import type { ScheduleDetailItem } from "@/modules/calendar-ui/schedule-detail-types";
 import {
   parseStructuredOverrideNote,
-  type ShiftChange,
 } from "@/modules/family/domain/structured-override-note";
 import type { ShiftOverride } from "@/modules/shift";
-import type { OverrideType } from "@/modules/shift";
 
-export interface UpcomingScheduleItem {
-  id: string;
-  sourceId: string;
-  title: string;
-  dateKey: string;
-  startTime: string;
-  endTime: string | null;
-  allDay: boolean;
-  eventType: OverrideType | null;
-  shiftChange: ShiftChange | null;
-  memo: string;
-  remindAt: string | null;
-  source: "event" | "override";
-}
+export type UpcomingScheduleItem = ScheduleDetailItem;
 
 export interface UpcomingWindow {
   startDateKey: string;

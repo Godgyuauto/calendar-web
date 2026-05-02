@@ -2,6 +2,7 @@ import {
   getEventTypeOption,
   toStructuredOverrideDisplay,
 } from "@/modules/calendar-ui/structured-override";
+import type { ScheduleDetailItem } from "@/modules/calendar-ui/schedule-detail-types";
 import type { ShiftOverride } from "@/modules/shift";
 
 export interface DayAgendaItem {
@@ -13,6 +14,7 @@ export interface DayAgendaItem {
   timeLabel: string;
   memo: string;
   sortKey: string;
+  detail: ScheduleDetailItem;
 }
 
 interface DateTimeParts {
@@ -89,8 +91,9 @@ export function buildDayAgendaItems(
       const title = display.title.trim() || typeOption.label;
       const shiftLabel =
         display.shiftChange === "KEEP" ? "근무조 유지" : `근무조 ${display.shiftChange}`;
+      const sourceId = override.id ?? `${override.date}:${index}`;
       return {
-        id: override.id ?? `${override.date}:${index}`,
+        id: sourceId,
         overrideId: override.id,
         title,
         typeLabel: typeOption.label,
@@ -98,6 +101,20 @@ export function buildDayAgendaItems(
         timeLabel: formatDayAgendaTime(display.startAt, display.endAt, display.allDay),
         memo: display.memo.trim(),
         sortKey: display.allDay ? `${dateKey}T00:00` : display.startAt ?? `${dateKey}T00:00`,
+        detail: {
+          id: `override:${sourceId}`,
+          sourceId,
+          title,
+          dateKey: override.date,
+          startTime: display.startAt ?? override.startTime ?? `${override.date}T00:00:00+09:00`,
+          endTime: display.endAt ?? override.endTime ?? null,
+          allDay: display.allDay,
+          eventType: display.eventType,
+          shiftChange: display.shiftChange,
+          memo: display.memo.trim(),
+          remindAt: display.remindAt,
+          source: "override" as const,
+        },
       };
     })
     .sort((left, right) =>

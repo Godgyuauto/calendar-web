@@ -13,15 +13,12 @@ import {
   offsetMonth,
   type ViewMode,
 } from "@/modules/calendar-ui/calendar-url-state";
+import { CALENDAR_VIEW_OPTIONS } from "@/modules/calendar-ui/calendar-view-options";
 import { DayAgenda } from "@/modules/calendar-ui/DayAgenda";
 import { MonthGrid } from "@/modules/calendar-ui/MonthGrid";
 import { WeekAgenda } from "@/modules/calendar-ui/WeekAgenda";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  PlusIcon,
-  SegmentControl,
-} from "@/modules/ui/components";
+import { useCalendarScheduleDetail } from "@/modules/calendar-ui/use-calendar-schedule-detail";
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, SegmentControl } from "@/modules/ui/components";
 
 interface CalendarPageClientProps {
   monthLabel: string;
@@ -56,6 +53,7 @@ export function CalendarPageClient({
   const [focusedDate, setFocusedDate] = useState(
     initialFocusedDateKey ?? initialSelectedDateKey ?? todayKey,
   );
+  const { openDetail, detailSheets } = useCalendarScheduleDetail();
   const selectedDateFromQuery = initialSelectedDateKey;
   const sheetDate = selectedDate ?? todayKey;
   const sheetOpen = fabOpen || selectedDate !== null;
@@ -121,11 +119,7 @@ export function CalendarPageClient({
         <SegmentControl<ViewMode>
           value={view}
           onChange={setView}
-          options={[
-            { value: "month", label: "월" },
-            { value: "week", label: "주" },
-            { value: "day", label: "일" },
-          ]}
+          options={CALENDAR_VIEW_OPTIONS}
         />
       </div>
 
@@ -162,6 +156,7 @@ export function CalendarPageClient({
           overrides={monthOverrides}
           onChangeDate={changeFocusedDate}
           onOpenDateSheet={openDateSheet}
+          onOpenDetail={openDetail}
         />
       ) : (
         <WeekAgenda
@@ -171,6 +166,7 @@ export function CalendarPageClient({
           overrides={monthOverrides}
           onChangeDate={changeFocusedWeek}
           onOpenDateSheet={openDateSheet}
+          onOpenDetail={openDetail}
         />
       )}
 
@@ -195,6 +191,7 @@ export function CalendarPageClient({
         initialTab={selectedDate ? "existing" : "create"}
         selectedOverrideId={selectedOverrideId}
       />
+      {detailSheets}
     </>
   );
 }

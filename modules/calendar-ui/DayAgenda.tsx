@@ -2,6 +2,7 @@
 
 import type { CalendarCell } from "@/modules/calendar";
 import { buildDayAgendaItems } from "@/modules/calendar-ui/day-agenda-items";
+import type { ScheduleDetailItem } from "@/modules/calendar-ui/schedule-detail-types";
 import type { ShiftOverride } from "@/modules/shift";
 import { SHIFT_PALETTE } from "@/modules/ui/tokens";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/modules/ui/components";
@@ -13,6 +14,7 @@ interface DayAgendaProps {
   overrides: ShiftOverride[];
   onChangeDate: (dateKey: string) => void;
   onOpenDateSheet: (dateKey: string, overrideId?: string) => void;
+  onOpenDetail: (event: ScheduleDetailItem) => void;
 }
 
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -40,6 +42,7 @@ export function DayAgenda({
   overrides,
   onChangeDate,
   onOpenDateSheet,
+  onOpenDetail,
 }: DayAgendaProps) {
   const cell = calendarCells.find((candidate) => candidate.date === dateKey);
   const shift = cell?.shift;
@@ -110,7 +113,7 @@ export function DayAgenda({
             <button
               type="button"
               key={item.id}
-              onClick={() => onOpenDateSheet(dateKey, item.overrideId)}
+              onClick={() => onOpenDetail(item.detail)}
               className="w-full rounded-[13px] border border-[#e5e5ea] bg-white px-3.5 py-3 text-left active:bg-[#f7f8fb]"
             >
               <div className="flex items-start justify-between gap-3">

@@ -83,6 +83,20 @@ describe("buildDayAgendaItems", () => {
       shiftLabel: "근무조 OFF",
       memo: "세종 베어트리파크",
       timeLabel: "09:00 - 15:00",
+      detail: {
+        id: "override:override-1",
+        sourceId: "override-1",
+        title: "서윤이 소풍",
+        dateKey: "2026-05-04",
+        startTime: "2026-05-04T09:00",
+        endTime: "2026-05-04T15:00",
+        allDay: false,
+        eventType: "vacation",
+        shiftChange: "OFF",
+        memo: "세종 베어트리파크",
+        remindAt: null,
+        source: "override",
+      },
     });
     expect("actionLabel" in items[0]).toBe(false);
   });

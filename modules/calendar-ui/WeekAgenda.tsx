@@ -1,6 +1,7 @@
 "use client";
 
 import type { CalendarCell } from "@/modules/calendar";
+import type { ScheduleDetailItem } from "@/modules/calendar-ui/schedule-detail-types";
 import type { ShiftOverride } from "@/modules/shift";
 import { SHIFT_PALETTE } from "@/modules/ui/tokens";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/modules/ui/components";
@@ -13,6 +14,7 @@ interface WeekAgendaProps {
   overrides: ShiftOverride[];
   onChangeDate: (dateKey: string) => void;
   onOpenDateSheet: (dateKey: string, overrideId?: string) => void;
+  onOpenDetail: (event: ScheduleDetailItem) => void;
 }
 
 export function WeekAgenda({
@@ -22,6 +24,7 @@ export function WeekAgenda({
   overrides,
   onChangeDate,
   onOpenDateSheet,
+  onOpenDetail,
 }: WeekAgendaProps) {
   const days = buildWeekAgendaDays({ dateKey, todayKey, calendarCells, overrides });
 
@@ -91,7 +94,7 @@ export function WeekAgenda({
                       <button
                         type="button"
                         key={item.id}
-                        onClick={() => onOpenDateSheet(day.dateKey, item.overrideId)}
+                        onClick={() => onOpenDetail(item.detail)}
                         className="block w-full truncate rounded-[8px] bg-[#f6f6f8] px-2.5 py-2 text-left text-[12px] font-semibold text-[#1a1a1a]"
                       >
                         {item.timeLabel} · {item.title}

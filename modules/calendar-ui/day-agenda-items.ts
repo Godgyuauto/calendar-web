@@ -13,6 +13,7 @@ export interface DayAgendaItem {
   timeLabel: string;
   memo: string;
   sortKey: string;
+  actionLabel: string;
 }
 
 interface DateTimeParts {
@@ -98,6 +99,7 @@ export function buildDayAgendaItems(
         timeLabel: formatDayAgendaTime(display.startAt, display.endAt, display.allDay),
         memo: display.memo.trim(),
         sortKey: display.allDay ? `${dateKey}T00:00` : display.startAt ?? `${dateKey}T00:00`,
+        actionLabel: "상세/관리",
       };
     })
     .sort((left, right) =>

@@ -129,6 +129,9 @@ export function DayAgenda({
                   {item.typeLabel}
                 </span>
               </div>
+              <p className="mt-2 text-[11px] font-semibold text-[#007AFF]">
+                {item.actionLabel}
+              </p>
             </button>
           ))
         ) : (

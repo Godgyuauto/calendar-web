@@ -37,6 +37,15 @@ function toTimestamp(value?: string): number {
   return Number.isNaN(unix) ? 0 : unix;
 }
 
+function toStartTimestamp(value?: string | null): number {
+  if (!value) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const unix = new Date(value).getTime();
+  return Number.isNaN(unix) ? Number.POSITIVE_INFINITY : unix;
+}
+
 export function pickExistingOverride(
   overrides: ExistingOverride[],
   dateKey: string,
@@ -56,7 +65,14 @@ export function listExistingOverrides(
 ): ExistingOverride[] {
   return overrides
     .filter((override) => override.date === dateKey)
-    .sort((left, right) => toTimestamp(right.createdAt) - toTimestamp(left.createdAt));
+    .sort((left, right) => {
+      const leftStart = toStartTimestamp(left.startTime);
+      const rightStart = toStartTimestamp(right.startTime);
+      if (leftStart !== rightStart) {
+        return leftStart < rightStart ? -1 : 1;
+      }
+      return toTimestamp(right.createdAt) - toTimestamp(left.createdAt);
+    });
 }
 
 // Reads current-month overrides and picks the selected day entry.

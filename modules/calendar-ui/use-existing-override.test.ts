@@ -51,16 +51,24 @@ describe("pickExistingOverride", () => {
 });
 
 describe("listExistingOverrides", () => {
-  it("returns every override for the selected day", () => {
+  it("returns every override for the selected day in start-time order", () => {
     const selected = listExistingOverrides(
       [
-        override({ id: "picnic", createdAt: "2026-05-04T09:00:00+09:00" }),
+        override({
+          id: "picnic",
+          startTime: "2026-05-04T10:00:00+09:00",
+          createdAt: "2026-05-04T09:00:00+09:00",
+        }),
         override({ id: "other-day", date: "2026-05-05" }),
-        override({ id: "camping", createdAt: "2026-05-04T10:00:00+09:00" }),
+        override({
+          id: "camping",
+          startTime: "2026-05-04T18:00:00+09:00",
+          createdAt: "2026-05-04T10:00:00+09:00",
+        }),
       ],
       "2026-05-04",
     );
 
-    expect(selected.map((item) => item.id)).toEqual(["camping", "picnic"]);
+    expect(selected.map((item) => item.id)).toEqual(["picnic", "camping"]);
   });
 });

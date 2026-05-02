@@ -1,11 +1,13 @@
 "use client";
 
 import type { CalendarCell } from "@/modules/calendar";
-import { getMonthGridOverrideLabel } from "@/modules/calendar-ui/structured-override";
+import { buildMonthGridOverrideBadges } from "@/modules/calendar-ui/month-grid-overrides";
+import type { ShiftOverride } from "@/modules/shift";
 import { SHIFT_PALETTE } from "@/modules/ui/tokens";
 
 interface MonthGridProps {
   cells: CalendarCell[];
+  monthOverrides: ShiftOverride[];
   todayKey: string;
   selectedDateKey?: string;
   onSelectDate: (dateKey: string) => void;
@@ -24,6 +26,7 @@ function weekdayColor(weekday: number, muted: boolean): string {
 // route transition or server component refresh.
 export function MonthGrid({
   cells,
+  monthOverrides,
   todayKey,
   selectedDateKey,
   onSelectDate,
@@ -46,10 +49,13 @@ export function MonthGrid({
           const isToday = cell.date === todayKey;
           const isSelected = selectedDateKey === cell.date;
           const palette = shift ? SHIFT_PALETTE[shift.finalShift] : undefined;
-          const overrideLabel =
-            cell.isCurrentMonth && shift?.override?.label
-              ? getMonthGridOverrideLabel(shift.override)
-              : "";
+          const overrideBadges = cell.isCurrentMonth
+            ? buildMonthGridOverrideBadges({
+                cellDate: cell.date,
+                primaryOverride: shift?.override,
+                monthOverrides,
+              })
+            : null;
           const hasOverrideEvent = cell.isCurrentMonth && Boolean(shift?.override);
           const hasShiftChange =
             hasOverrideEvent &&
@@ -89,12 +95,19 @@ export function MonthGrid({
                   {shift.finalShift}
                 </span>
               ) : null}
-              {overrideLabel ? (
-                <span className="max-w-full truncate rounded-[6px] bg-[#fff4e5] px-1.5 py-0.5 text-[9px] font-semibold text-[#b35a00]">
-                  {overrideLabel}
+              {overrideBadges?.label ? (
+                <span className="flex max-w-full items-center gap-1">
+                  <span className="min-w-0 truncate rounded-[6px] bg-[#fff4e5] px-1.5 py-0.5 text-[9px] font-semibold text-[#b35a00]">
+                    {overrideBadges.label}
+                  </span>
+                  {overrideBadges.additionalCount > 0 ? (
+                    <span className="shrink-0 rounded-full bg-[#ff9500] px-1.5 py-0.5 text-[9px] font-bold text-white">
+                      +{overrideBadges.additionalCount}
+                    </span>
+                  ) : null}
                 </span>
               ) : null}
-              {!overrideLabel && hasOverrideEvent ? (
+              {!overrideBadges?.label && hasOverrideEvent ? (
                 <span
                   aria-label="일정 있음"
                   className="mt-0.5 h-1.5 w-1.5 rounded-full bg-[#ff9500]"

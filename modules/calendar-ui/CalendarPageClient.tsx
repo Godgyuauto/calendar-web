@@ -51,7 +51,7 @@ export function CalendarPageClient({
   const searchParams = useSearchParams();
   const [view, setView] = useState<ViewMode>(initialView);
   const [fabOpen, setFabOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string | null>(initialSelectedDateKey ?? null);
+  const [selectedDate, setSelectedDate] = useState(initialSelectedDateKey ?? null);
   const [selectedOverrideId, setSelectedOverrideId] = useState<string | null>(null);
   const [focusedDate, setFocusedDate] = useState(
     initialFocusedDateKey ?? initialSelectedDateKey ?? todayKey,
@@ -144,6 +144,7 @@ export function CalendarPageClient({
       {view === "month" ? (
         <MonthGrid
           cells={calendarCells}
+          monthOverrides={monthOverrides}
           todayKey={todayKey}
           selectedDateKey={selectedDate ?? undefined}
           onSelectDate={(dateKey) => {
@@ -185,7 +186,6 @@ export function CalendarPageClient({
       >
         <PlusIcon size={24} />
       </button>
-
       <AddEventSheet
         key={`${sheetDate}:${selectedOverrideId ?? "day"}:${sheetOpen ? "open" : "closed"}`}
         open={sheetOpen}

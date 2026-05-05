@@ -9,4 +9,6 @@ Current routes include:
 - `/api/push/subscriptions`
 - `/api/members` (GET/PATCH)
 - `/api/settings/summary`
-- `/api/auth/login`, `/api/auth/logout`, `/api/auth/refresh`
+- `/api/auth/login`, `/api/auth/logout`, `/api/auth/refresh`, `/api/auth/signup`
+- `/api/onboarding/family`, `/api/onboarding/invite`
+- `/api/invites`

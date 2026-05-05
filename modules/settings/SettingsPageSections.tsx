@@ -49,7 +49,13 @@ export function ProfileSection({ data }: { data: SettingsPageData }) {
   );
 }
 
-export function FamilyInfoSection({ data }: { data: SettingsPageData }) {
+export function FamilyInfoSection({
+  data,
+  onCreateInvite,
+}: {
+  data: SettingsPageData;
+  onCreateInvite: () => void;
+}) {
   return (
     <>
       <SectionLabel>가족 정보</SectionLabel>
@@ -64,6 +70,14 @@ export function FamilyInfoSection({ data }: { data: SettingsPageData }) {
           }
           onClick={() => {}}
         />
+        {data.canCreateInvite ? (
+          <SettingsRow
+            label="초대 코드 만들기"
+            description="아내 계정이 이 코드로 같은 가족 캘린더에 참여합니다"
+            trailing={<ChevronRightIcon />}
+            onClick={onCreateInvite}
+          />
+        ) : null}
         <SettingsRow
           label="멤버 관리"
           trailing={

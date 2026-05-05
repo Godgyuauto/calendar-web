@@ -28,6 +28,7 @@ export interface SettingsPageData {
   profileEmail: string;
   profileRoleLabel: string;
   selfWorking: boolean;
+  canCreateInvite: boolean;
   familyName: string;
   shiftPatternLabel: string;
   shiftPatternSeedDate: string;
@@ -45,6 +46,7 @@ function createDisconnectedData(): SettingsPageData {
     profileEmail: "로그인 정보 없음",
     profileRoleLabel: "멤버",
     selfWorking: true,
+    canCreateInvite: false,
     familyName: "가족 정보 없음",
     shiftPatternLabel: formatPatternLabel(
       DEFAULT_SHIFT_PATTERN_V1.patternId,
@@ -106,6 +108,7 @@ export async function getSettingsPageData(): Promise<SettingsPageData> {
         ? getFamilyAppRoleLabel(resolveFamilyAppRole(self, familyMasterUserId))
         : "가족원",
       selfWorking: self?.working ?? true,
+      canCreateInvite: self?.role === "admin",
       familyName: familyName ?? "이름 없는 가족",
       shiftPatternLabel: formatPatternLabel(
         resolvedPattern.patternId,

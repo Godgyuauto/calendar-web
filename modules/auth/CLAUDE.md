@@ -1,17 +1,24 @@
 # modules/auth — 로그인 / 세션
 
-관리자가 생성한 계정으로 이메일·비밀번호 로그인만 지원. 회원가입·소셜
-로그인·가족 코드 참여 없음 (handoff README 명시).
+이메일·비밀번호 로그인과 공개 계정 만들기를 지원. 계정 생성은
+Supabase Auth에만 비밀번호를 전달하고, 서버에서 기존 이메일 여부를 먼저
+확인한다. 가입 직후 가족에 속하지 않은 사용자는 온보딩에서 새 가족 생성
+또는 초대 코드 참여 흐름으로 연결한다.
 
 ## 구조
 
 - `LoginPage.tsx` — `"use client"`. 이메일/비번 폼 제출 시
   `POST /api/auth/login` 호출(credential only), 성공 시 `/`로 라우팅.
+  `계정 만들기` 탭에서는 `POST /api/auth/signup` 호출, 세션이 즉시 발급되면
+  `/onboarding`으로 라우팅.
 - `LoginRoutePage.tsx` — async server component. 세션이 이미 있으면 `/`로
   리다이렉트하고, 없으면 `LoginPage`를 렌더.
 - `api/login-route.ts` — 서버에서 Supabase
   `POST /auth/v1/token?grant_type=password`를 호출하고 `HttpOnly access_token`
   쿠키를 세팅. `refresh_token`이 있으면 함께 저장.
+- `api/signup-route.ts` — 서버에서 service role로
+  `GET /auth/v1/admin/users` 이메일 중복 확인 후 Supabase
+  `POST /auth/v1/signup` 호출. 비밀번호는 앱 DB에 저장하지 않는다.
 - `api/refresh-route.ts` — 서버에서 Supabase
   `POST /auth/v1/token?grant_type=refresh_token` 호출로 세션 갱신.
 - `api/logout-route.ts` — 서버에서 `access_token`(및 레거시 토큰 쿠키)을 만료.
@@ -43,5 +50,6 @@
 ## 알려진 TODO
 
 - 온보딩 완료 플래그를 어디에 저장할지 결정(DB `family_members.onboarded_at`?)
+- 가입 후 새 가족 생성/초대 코드 참여 API와 UI 구현.
 - refresh-token `Max-Age`를 운영 정책에 맞춰 확정
   (`AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS`)

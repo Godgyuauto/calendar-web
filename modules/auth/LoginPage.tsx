@@ -8,66 +8,50 @@ import {
   TextField,
   CalendarIcon,
 } from "@/modules/ui/components";
-
-interface LoginFailure {
-  error: string;
-}
-
-interface LoginSuccess {
-  ok: true;
-}
-
-// Auth handoff entry.
-// Browser posts credentials to our server route so token handling stays server-side.
-async function signInWithPassword(
-  email: string,
-  password: string,
-): Promise<LoginSuccess | LoginFailure> {
-  try {
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) {
-      const body = (await response.json().catch(() => ({}))) as {
-        error?: string;
-      };
-      return {
-        error: body.error ?? "로그인에 실패했습니다.",
-      };
-    }
-    return { ok: true };
-  } catch {
-    return { error: "네트워크 오류가 발생했습니다." };
-  }
-}
+import { AuthModeTabs, type AuthMode } from "@/modules/auth/AuthModeTabs";
+import { signInWithPassword, signUpWithPassword } from "@/modules/auth/login-client-actions";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const disabled = loading || email.length === 0 || password.length === 0;
+  const disabled =
+    loading ||
+    email.length === 0 ||
+    password.length === 0 ||
+    (mode === "signup" && displayName.length === 0);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setNotice(null);
     setLoading(true);
-    const result = await signInWithPassword(email, password);
+    const result = mode === "login"
+      ? await signInWithPassword(email, password)
+      : await signUpWithPassword(email, password, displayName);
     setLoading(false);
     if ("error" in result) {
       setError(result.error);
       return;
     }
-    router.replace("/");
+    if ("signedIn" in result && !result.signedIn) {
+      setNotice("계정이 만들어졌습니다. 이메일 확인 후 로그인해주세요.");
+      return;
+    }
+    router.replace(mode === "signup" ? "/onboarding" : "/");
     router.refresh();
+  };
+
+  const changeMode = (nextMode: AuthMode) => {
+    setMode(nextMode);
+    setError(null);
+    setNotice(null);
   };
 
   return (
@@ -83,7 +67,17 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={submit} className="mt-10 flex flex-col gap-3">
+        <form onSubmit={submit} className="mt-8 flex flex-col gap-3">
+          <AuthModeTabs mode={mode} onChange={changeMode} />
+          {mode === "signup" ? (
+            <TextField
+              type="text"
+              placeholder="이름"
+              autoComplete="name"
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+            />
+          ) : null}
           <TextField
             type="email"
             placeholder="이메일 주소"
@@ -94,7 +88,7 @@ export default function LoginPage() {
           <TextField
             type="password"
             placeholder="비밀번호"
-            autoComplete="current-password"
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
@@ -103,13 +97,24 @@ export default function LoginPage() {
               {error}
             </p>
           ) : null}
+          {notice ? (
+            <p role="status" className="text-[12px] text-[#007AFF]">
+              {notice}
+            </p>
+          ) : null}
           <PrimaryButton type="submit" disabled={disabled} className="mt-2">
-            {loading ? "로그인 중..." : "로그인"}
+            {loading
+              ? mode === "login"
+                ? "로그인 중..."
+                : "계정 만드는 중..."
+              : mode === "login"
+                ? "로그인"
+                : "계정 만들기"}
           </PrimaryButton>
         </form>
 
         <aside className="mt-8 rounded-[12px] bg-[#f2f2f7] px-4 py-3 text-[12px] text-[#8e8e93]">
-          계정은 관리자가 생성합니다. 이메일로 발급받은 계정 정보를 입력해주세요.
+          계정을 만든 뒤 새 가족을 만들거나 초대 코드로 가족 캘린더에 참여합니다.
         </aside>
       </main>
     </AuthShell>

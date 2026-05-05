@@ -3,6 +3,10 @@ export interface SupabaseAuthConfig {
   anonKey: string;
 }
 
+export interface SupabaseAdminAuthConfig extends SupabaseAuthConfig {
+  serviceRoleKey: string;
+}
+
 export interface SupabaseTokenResponse {
   access_token?: string;
   refresh_token?: string;
@@ -24,6 +28,17 @@ export function resolveSupabaseAuthConfig(): SupabaseAuthConfig | null {
   }
 
   return { url: url.replace(/\/+$/, ""), anonKey };
+}
+
+export function resolveSupabaseAdminAuthConfig(): SupabaseAdminAuthConfig | null {
+  const config = resolveSupabaseAuthConfig();
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+  if (!config || !serviceRoleKey) {
+    return null;
+  }
+
+  return { ...config, serviceRoleKey };
 }
 
 export function asNonEmptyString(value: unknown): string | null {

@@ -175,6 +175,7 @@ Event(`family_events`) → 부가 일정 표시/기록 용도 (근무 계산 SoT
 
 REST API (현재):
 - `/api/auth/login` (POST), `/api/auth/signup` (POST), `/api/auth/refresh` (POST), `/api/auth/logout` (POST · DELETE) — Supabase Auth 경유. signup은 서버에서 이메일 중복 확인 후 Auth user를 생성하고, 비밀번호는 앱 DB에 저장하지 않는다.
+- `/api/onboarding/family` (POST) — 로그인된 사용자가 아직 가족에 속하지 않았을 때 새 `families` row, 본인 `family_members admin` row, 기본 `shift_patterns` row를 생성한다.
 - `/api/shifts/today` (GET), `/api/shifts/month` (GET)
 - `/api/events` (GET · POST · PATCH · DELETE) — Supabase repository 경유, `Authorization: Bearer <token>` 필수 (부가 일정)
 - `/api/overrides` (GET · POST · PATCH · DELETE) — Supabase repository 경유, `Authorization: Bearer <token>` 필수 (근무/알림 SoT). `GET ?scope=mine`으로 본인 일정만 조회 가능. PATCH/DELETE는 owner만 허용.

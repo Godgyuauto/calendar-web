@@ -4,110 +4,96 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   AuthShell,
-  Card,
+  CalendarIcon,
   PrimaryButton,
+  TextField,
 } from "@/modules/ui/components";
 
-interface PatternOption {
-  id: string;
-  title: string;
-  subtitle: string;
+interface CreateFamilyFailure {
+  error: string;
 }
 
-const PATTERNS: PatternOption[] = [
-  { id: "A-OFF-B-OFF-C-OFF", title: "A-OFF-B-OFF-C-OFF", subtitle: "24일 주기 (기본)" },
-  { id: "A-B", title: "A-B 교대", subtitle: "2일 주기" },
-  { id: "day-night", title: "주/야간 교대", subtitle: "2교대" },
-  { id: "custom", title: "직접 입력", subtitle: "개인 맞춤 패턴" },
-];
+interface CreateFamilySuccess {
+  ok: true;
+}
 
-// Step 1 of a 3-step onboarding. Steps 2/3 are not designed in the handoff —
-// tapping "다음" redirects to home for now; replace when steps are specified.
+async function createFamily(familyName: string): Promise<CreateFamilySuccess | CreateFamilyFailure> {
+  try {
+    const response = await fetch("/api/onboarding/family", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ familyName }),
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { error?: string };
+      return { error: body.error ?? "가족 캘린더를 만들지 못했습니다." };
+    }
+    return { ok: true };
+  } catch {
+    return { error: "네트워크 오류가 발생했습니다." };
+  }
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string>(PATTERNS[0]!.id);
+  const [familyName, setFamilyName] = useState("우리 가족");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const disabled = loading || familyName.trim().length === 0;
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setLoading(true);
+    const result = await createFamily(familyName);
+    setLoading(false);
+    if ("error" in result) {
+      setError(result.error);
+      return;
+    }
+    router.replace("/");
+    router.refresh();
+  };
 
   return (
     <AuthShell>
-      <header className="px-5 pt-8">
-        <div className="flex gap-1.5">
-          <span className="h-1.5 flex-1 rounded-full bg-[#007AFF]" />
-          <span className="h-1.5 flex-1 rounded-full bg-[#e5e5ea]" />
-          <span className="h-1.5 flex-1 rounded-full bg-[#e5e5ea]" />
+      <main className="flex flex-1 flex-col justify-center px-6 pb-10 pt-14">
+        <div className="flex flex-col items-center">
+          <div className="flex h-[72px] w-[72px] items-center justify-center rounded-[18px] bg-[#007AFF] text-white shadow-[0_10px_24px_rgba(0,122,255,0.28)]">
+            <CalendarIcon size={36} />
+          </div>
+          <h1 className="mt-6 text-[26px] font-bold text-[#1a1a1a]">가족 캘린더 시작</h1>
+          <p className="mt-1.5 text-center text-[13px] text-[#8e8e93]">
+            먼저 내 가족 공간을 만들고, 다음 단계에서 가족을 초대합니다.
+          </p>
         </div>
-        <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8e8e93]">
-          1 / 3
-        </p>
-        <h1 className="mt-2 text-[22px] font-bold text-[#1a1a1a]">근무 패턴을 설정해주세요</h1>
-        <p className="mt-1 text-[13px] text-[#8e8e93]">
-          선택한 패턴으로 달력이 자동 생성됩니다.
-        </p>
-      </header>
 
-      <main className="flex-1 px-4 pt-5">
-        <div className="flex flex-col gap-2">
-          {PATTERNS.map((pattern) => {
-            const active = selected === pattern.id;
-            return (
-              <button
-                key={pattern.id}
-                type="button"
-                onClick={() => setSelected(pattern.id)}
-                className="text-left"
-              >
-                <Card
-                  className={`flex items-center justify-between border ${
-                    active
-                      ? "border-[#007AFF] ring-1 ring-[#007AFF]"
-                      : "border-transparent"
-                  }`}
-                >
-                  <div>
-                    <p
-                      className={`text-[15px] font-semibold ${
-                        active ? "text-[#007AFF]" : "text-[#1a1a1a]"
-                      }`}
-                    >
-                      {pattern.title}
-                    </p>
-                    <p className="mt-0.5 text-[12px] text-[#8e8e93]">{pattern.subtitle}</p>
-                  </div>
-                  <span
-                    className={`flex h-5 w-5 items-center justify-center rounded-full border ${
-                      active
-                        ? "border-[#007AFF] bg-[#007AFF] text-white"
-                        : "border-[#c7c7cc] bg-white"
-                    }`}
-                    aria-hidden
-                  >
-                    {active ? (
-                      <svg
-                        width={12}
-                        height={12}
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={3}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M20 6L9 17l-5-5" />
-                      </svg>
-                    ) : null}
-                  </span>
-                </Card>
-              </button>
-            );
-          })}
-        </div>
+        <form onSubmit={submit} className="mt-10 flex flex-col gap-3">
+          <TextField
+            type="text"
+            placeholder="가족 이름"
+            autoComplete="organization"
+            value={familyName}
+            onChange={(event) => setFamilyName(event.target.value)}
+          />
+          {error ? (
+            <p role="alert" className="text-[12px] text-[#ff3b30]">
+              {error}
+            </p>
+          ) : null}
+          <PrimaryButton type="submit" disabled={disabled} className="mt-2">
+            {loading ? "만드는 중..." : "새 가족 만들기"}
+          </PrimaryButton>
+        </form>
+
+        <aside className="mt-8 rounded-[12px] bg-[#f2f2f7] px-4 py-3 text-[12px] text-[#8e8e93]">
+          초대 코드로 참여하기는 다음 단계에서 추가합니다.
+        </aside>
       </main>
-
-      <footer
-        className="px-4 pt-4"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
-      >
-        <PrimaryButton onClick={() => router.push("/")}>다음</PrimaryButton>
-      </footer>
     </AuthShell>
   );
 }

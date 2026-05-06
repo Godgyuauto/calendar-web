@@ -73,7 +73,8 @@ count_rows() {
   # support %N (nanoseconds). It would emit a literal "%N" causing temp-file
   # name collisions when the same (table,filter) is queried twice in one second.
   COUNT_ROWS_SEQ=$((COUNT_ROWS_SEQ + 1))
-  local table="$1" filter="$2" out="$TMP_DIR/count_${table}_${COUNT_ROWS_SEQ}_${RANDOM}.json"
+  local table="$1" filter="$2" out
+  out="$TMP_DIR/count_${table}_${COUNT_ROWS_SEQ}_${RANDOM}.json"
   api_json GET "${SUPABASE_URL}/rest/v1/${table}?select=id&${filter}" "$out"
   jq 'length' "$out"
 }

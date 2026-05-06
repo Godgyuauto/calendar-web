@@ -19,6 +19,7 @@ SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:-}"
 TEST_EMAIL="${RELEASE_CHECK_TEST_EMAIL:-codex.verify.release@example.com}"
 TEST_ROLE="${RELEASE_CHECK_TEST_ROLE:-editor}"
 TARGET_FAMILY_ID="${RELEASE_CHECK_FAMILY_ID:-}"
+TEST_FAMILY_NAME="${RELEASE_CHECK_TEST_FAMILY_NAME:-codex.verify.family}"
 TIMEOUT_SECONDS="${RELEASE_CHECK_TIMEOUT_SECONDS:-10}"
 GENERATED_PASSWORD="CodexRelease$(date +%s)!A1"
 
@@ -132,16 +133,31 @@ main() {
   fi
 
   if [[ -z "$TARGET_FAMILY_ID" ]]; then
-    local families_json="$TMP_DIR/families.json"
-    if ! api_service_json GET "${SUPABASE_URL}/rest/v1/families?select=id&order=created_at.asc&limit=1" "" "$families_json"; then
-      log "failed to read families"
+    local families_json="$TMP_DIR/families.json" encoded_family_name
+    encoded_family_name="$(jq -nr --arg value "$TEST_FAMILY_NAME" '$value|@uri')"
+    log "ensure verification family: ${TEST_FAMILY_NAME}"
+    if ! api_service_json GET "${SUPABASE_URL}/rest/v1/families?select=id&name=eq.${encoded_family_name}&order=created_at.asc&limit=1" "" "$families_json"; then
+      log "failed to read verification family"
       head -c 400 "$families_json" >&2 || true
       exit 1
     fi
     TARGET_FAMILY_ID="$(jq -r '.[0].id // empty' "$families_json")"
+    if [[ -z "$TARGET_FAMILY_ID" ]]; then
+      local family_body family_create_json="$TMP_DIR/family_create.json"
+      family_body="$(jq -cn --arg name "$TEST_FAMILY_NAME" '{name:$name}')"
+      if ! api_service_json POST "${SUPABASE_URL}/rest/v1/families" "$family_body" "$family_create_json"; then
+        log "failed to create verification family"
+        exit 1
+      fi
+      if ! api_service_json GET "${SUPABASE_URL}/rest/v1/families?select=id&name=eq.${encoded_family_name}&order=created_at.asc&limit=1" "" "$families_json"; then
+        log "failed to re-read verification family"
+        exit 1
+      fi
+      TARGET_FAMILY_ID="$(jq -r '.[0].id // empty' "$families_json")"
+    fi
   fi
   if [[ -z "$TARGET_FAMILY_ID" ]]; then
-    log "family not found; set RELEASE_CHECK_FAMILY_ID or create family row"
+    log "verification family not found; set RELEASE_CHECK_FAMILY_ID or check Supabase access"
     exit 1
   fi
 

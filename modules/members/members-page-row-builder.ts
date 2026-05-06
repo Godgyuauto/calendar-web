@@ -6,6 +6,7 @@ import {
 import type { FamilyMemberReadModel } from "@/modules/family/api/members/family-members-settings-supabase";
 import { DEFAULT_SHIFT_PATTERN_V1, resolveDayShift, type ShiftOverride } from "@/modules/shift";
 import type { ShiftPaletteKey } from "@/modules/ui/tokens";
+import { isSystemMemberProfile } from "./member-visibility";
 
 const AVATAR_COLORS = ["#007AFF", "#ff9500", "#34c759", "#af52de", "#ff2d55", "#8e8e93"];
 
@@ -59,22 +60,6 @@ function getMemberDisplayName(
   }
 
   return profile?.displayName ?? getEmailPrefix(profile?.email ?? null) ?? `멤버 ${userId.slice(0, 6)}`;
-}
-
-function isSystemMemberProfile(profile: MemberAuthProfile | undefined): boolean {
-  const candidates = [profile?.email, profile?.displayName]
-    .filter((value): value is string => typeof value === "string")
-    .map((value) => value.trim().toLowerCase());
-
-  return candidates.some((value) => {
-    const localPart = value.split("@")[0] ?? value;
-    return (
-      localPart.startsWith("codex.verify") ||
-      localPart.startsWith("claude.push") ||
-      localPart.startsWith("push.sender.") ||
-      localPart.startsWith("push.receiver.")
-    );
-  });
 }
 
 export function buildMemberRows({

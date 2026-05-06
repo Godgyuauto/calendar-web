@@ -110,6 +110,7 @@ export async function getMembersPageData(now: Date = new Date()): Promise<Member
     const rows: MemberRow[] = buildMemberRows({
       members,
       profiles,
+      familyId: auth.familyId,
       selfUserId: auth.userId,
       selfDisplayName: profile.displayName,
       todayKey,

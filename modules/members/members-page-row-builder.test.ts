@@ -36,6 +36,7 @@ describe("buildMemberRows", () => {
     const rows = buildMemberRows({
       members,
       profiles,
+      familyId: "family-id",
       selfUserId: "self-user",
       selfDisplayName: "민규",
       todayKey: "2026-05-06",
@@ -89,6 +90,37 @@ describe("buildMemberRows", () => {
         },
       ],
       profiles,
+      familyId: "family-id",
+      selfUserId: "self-user",
+      selfDisplayName: "민규",
+      todayKey: "2026-05-06",
+      weekDateKeys: ["2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-09"],
+      overrides: [],
+    });
+
+    expect(rows.map((row) => row.name)).toEqual(["민규", "전윤정"]);
+  });
+
+  it("filters legacy bootstrap rows whose user id equals the family id", () => {
+    const profiles = new Map<string, MemberAuthProfile>([
+      ["family-id", { userId: "family-id", email: "legacy@example.com", displayName: "이민규" }],
+      ["self-user", { userId: "self-user", email: "me@example.com", displayName: "민규" }],
+      ["wife-user", { userId: "wife-user", email: "wife@example.com", displayName: "전윤정" }],
+    ]);
+
+    const rows = buildMemberRows({
+      members: [
+        {
+          id: "legacy-row",
+          userId: "family-id",
+          role: "admin",
+          createdAt: "2026-04-20T00:00:00Z",
+          working: true,
+        },
+        ...members.slice(0, 2),
+      ],
+      profiles,
+      familyId: "family-id",
       selfUserId: "self-user",
       selfDisplayName: "민규",
       todayKey: "2026-05-06",
@@ -108,6 +140,7 @@ describe("buildMemberRows", () => {
     const rows = buildMemberRows({
       members: members.slice(0, 2),
       profiles,
+      familyId: "family-id",
       selfUserId: "self-user",
       selfDisplayName: "민규",
       todayKey: "2026-05-06",

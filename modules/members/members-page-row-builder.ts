@@ -28,6 +28,7 @@ export interface MemberRow {
 interface BuildMemberRowsInput {
   members: FamilyMemberReadModel[];
   profiles: Map<string, MemberAuthProfile>;
+  familyId: string;
   selfUserId: string;
   selfDisplayName: string | null;
   todayKey: string;
@@ -79,6 +80,7 @@ function isSystemMemberProfile(profile: MemberAuthProfile | undefined): boolean 
 export function buildMemberRows({
   members,
   profiles,
+  familyId,
   selfUserId,
   selfDisplayName,
   todayKey,
@@ -89,7 +91,11 @@ export function buildMemberRows({
   return members
     .filter((member) => {
       const profile = profiles.get(member.userId);
-      return (member.userId === selfUserId || !!profile) && !isSystemMemberProfile(profile);
+      return (
+        member.userId !== familyId &&
+        (member.userId === selfUserId || !!profile) &&
+        !isSystemMemberProfile(profile)
+      );
     })
     .map((member) => {
       const roleLabel = getFamilyAppRoleLabel(resolveFamilyAppRole(member, familyMasterUserId));

@@ -1,9 +1,4 @@
 import { getApiAuthFailure, getFamilyRepositoryFailure, resolveFamilyAuthContextFromToken } from "@/modules/family/api/_common";
-import {
-  getFamilyAppRoleLabel,
-  pickFamilyMasterUserId,
-  resolveFamilyAppRole,
-} from "@/modules/family/api/members";
 import { listFamilyMembersFromSupabase } from "@/modules/family/api/members";
 import { readAuthProfileFromSupabase } from "@/modules/family/api/settings";
 import { listShiftOverridesFromSupabase } from "@/modules/family/api/overrides";
@@ -13,20 +8,11 @@ import {
   readCachedMembersPageData,
   writeCachedMembersPageData,
 } from "@/modules/members/members-page-cache";
-import { DEFAULT_SHIFT_PATTERN_V1, resolveDayShift, type ShiftOverride } from "@/modules/shift";
-import type { ShiftPaletteKey } from "@/modules/ui/tokens";
+import { readMemberAuthProfiles } from "./members-page-auth-profiles";
+import { buildMemberRows, type MemberRow } from "./members-page-row-builder";
+import type { ShiftOverride } from "@/modules/shift";
 
-const AVATAR_COLORS = ["#007AFF", "#ff9500", "#34c759", "#af52de", "#ff2d55", "#8e8e93"];
-
-export interface MemberRow {
-  id: string;
-  name: string;
-  roleLabel: string;
-  avatarColor: string;
-  working: boolean;
-  todayShift?: ShiftPaletteKey;
-  weekShifts?: ShiftPaletteKey[];
-}
+export type { MemberRow } from "./members-page-row-builder";
 
 export interface MembersPageData {
   members: MemberRow[];
@@ -61,21 +47,6 @@ function getWeekDateKeys(todayKey: string): string[] {
   const weekStartOffset = parseDateKey(todayKey).getUTCDay();
   const weekStartKey = addDays(todayKey, -weekStartOffset);
   return Array.from({ length: 7 }, (_, index) => addDays(weekStartKey, index));
-}
-
-function getAvatarColor(userId: string): string {
-  const hash = userId
-    .split("")
-    .reduce((acc, char) => (acc + char.charCodeAt(0)) % AVATAR_COLORS.length, 0);
-  return AVATAR_COLORS[hash];
-}
-
-function getMemberDisplayName(userId: string, selfUserId: string, selfDisplayName: string | null): string {
-  if (userId === selfUserId) {
-    return selfDisplayName ?? "나";
-  }
-
-  return `멤버 ${userId.slice(0, 6)}`;
 }
 
 async function listWeekOverrides(
@@ -135,45 +106,15 @@ export async function getMembersPageData(now: Date = new Date()): Promise<Member
       readAuthProfileFromSupabase(auth),
       listWeekOverrides(auth, weekDateKeys),
     ]);
-    const familyMasterUserId = pickFamilyMasterUserId(members);
-
-    const rows: MemberRow[] = members.map((member) => {
-      const working = member.working;
-      const roleLabel = getFamilyAppRoleLabel(
-        resolveFamilyAppRole(member, familyMasterUserId),
-      );
-      if (!working) {
-        return {
-          id: member.id,
-          name: getMemberDisplayName(member.userId, auth.userId, profile.displayName),
-          roleLabel,
-          avatarColor: getAvatarColor(member.userId),
-          working,
-        };
-      }
-
-      const memberOverrides = overrides.filter((override) => override.userId === member.userId);
-      const todayShift = resolveDayShift(todayKey, {
-        pattern: DEFAULT_SHIFT_PATTERN_V1,
-        overrides: memberOverrides,
-      }).finalShift;
-      const weekShifts = weekDateKeys.map(
-        (dateKey) =>
-          resolveDayShift(dateKey, {
-            pattern: DEFAULT_SHIFT_PATTERN_V1,
-            overrides: memberOverrides,
-          }).finalShift,
-      );
-
-      return {
-        id: member.id,
-        name: getMemberDisplayName(member.userId, auth.userId, profile.displayName),
-        roleLabel,
-        avatarColor: getAvatarColor(member.userId),
-        working,
-        todayShift,
-        weekShifts,
-      };
+    const profiles = await readMemberAuthProfiles(members.map((member) => member.userId));
+    const rows: MemberRow[] = buildMemberRows({
+      members,
+      profiles,
+      selfUserId: auth.userId,
+      selfDisplayName: profile.displayName,
+      todayKey,
+      weekDateKeys,
+      overrides,
     });
 
     const data: MembersPageData = {

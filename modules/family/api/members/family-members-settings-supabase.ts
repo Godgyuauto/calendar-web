@@ -1,4 +1,5 @@
 import type { FamilyAuthContext } from "../_common/auth-context";
+import { resolveSupabaseAdminAuthConfig } from "@/modules/auth/api/supabase-auth";
 import {
   FamilyRepositoryError,
   assertSupabaseResponseOk,
@@ -55,6 +56,19 @@ function pickString(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function buildFamilyMemberReadHeaders(auth: FamilyAuthContext): HeadersInit {
+  const admin = resolveSupabaseAdminAuthConfig();
+  if (!admin) {
+    return buildSupabaseHeaders(auth);
+  }
+
+  return {
+    apikey: admin.serviceRoleKey,
+    Authorization: `Bearer ${admin.serviceRoleKey}`,
+    "Content-Type": "application/json",
+  };
+}
+
 
 export async function listFamilyMembersFromSupabase(
   auth: FamilyAuthContext,
@@ -72,7 +86,7 @@ export async function listFamilyMembersFromSupabase(
 
     const response = await fetch(buildSupabaseUrl(`/rest/v1/family_members?${query}`), {
       method: "GET",
-      headers: buildSupabaseHeaders(auth),
+      headers: buildFamilyMemberReadHeaders(auth),
       cache: "no-store",
     });
     await assertSupabaseResponseOk(response, "Failed to list family members.");

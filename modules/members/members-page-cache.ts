@@ -39,3 +39,14 @@ export function writeCachedMembersPageData(
 ): void {
   getMembersPageCache().set(cacheKey, { value, expiresAtMs: nowMs + MEMBERS_PAGE_TTL_MS });
 }
+
+export function invalidateMembersPageCacheForUser(familyId: string, userId: string): void {
+  const cache = getMembersPageCache();
+  const userPrefix = `${familyId}:${userId}:`;
+
+  for (const key of cache.keys()) {
+    if (key.startsWith(userPrefix)) {
+      cache.delete(key);
+    }
+  }
+}

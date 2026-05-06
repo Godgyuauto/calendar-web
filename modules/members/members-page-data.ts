@@ -1,18 +1,12 @@
-import {
-  getApiAuthFailure,
-  resolveFamilyAuthContextFromToken,
-} from "@/modules/family/api/_common";
+import { getApiAuthFailure, getFamilyRepositoryFailure, resolveFamilyAuthContextFromToken } from "@/modules/family/api/_common";
 import {
   getFamilyAppRoleLabel,
   pickFamilyMasterUserId,
   resolveFamilyAppRole,
 } from "@/modules/family/api/members";
-import {
-  listFamilyMembersFromSupabase,
-} from "@/modules/family/api/members";
+import { listFamilyMembersFromSupabase } from "@/modules/family/api/members";
 import { readAuthProfileFromSupabase } from "@/modules/family/api/settings";
 import { listShiftOverridesFromSupabase } from "@/modules/family/api/overrides";
-import { getFamilyRepositoryFailure } from "@/modules/family/api/_common";
 import { getServerAccessTokenFromCookies } from "@/modules/home/access-token";
 import { toSeoulDateKey } from "@/modules/home/utils/date";
 import {
@@ -37,6 +31,12 @@ export interface MemberRow {
 export interface MembersPageData {
   members: MemberRow[];
   isConnected: boolean;
+  profileName: string;
+  profileEmail: string;
+}
+
+function createDisconnectedData(): MembersPageData {
+  return { members: [], isConnected: false, profileName: "나", profileEmail: "로그인 정보 없음" };
 }
 
 function parseDateKey(dateKey: string): Date {
@@ -70,11 +70,7 @@ function getAvatarColor(userId: string): string {
   return AVATAR_COLORS[hash];
 }
 
-function getMemberDisplayName(
-  userId: string,
-  selfUserId: string,
-  selfDisplayName: string | null,
-): string {
+function getMemberDisplayName(userId: string, selfUserId: string, selfDisplayName: string | null): string {
   if (userId === selfUserId) {
     return selfDisplayName ?? "나";
   }
@@ -109,7 +105,7 @@ async function listWeekOverrides(
 export async function getMembersPageData(now: Date = new Date()): Promise<MembersPageData> {
   const accessToken = await getServerAccessTokenFromCookies();
   if (!accessToken) {
-    return { members: [], isConnected: false };
+    return createDisconnectedData();
   }
 
   let auth: Awaited<ReturnType<typeof resolveFamilyAuthContextFromToken>>;
@@ -118,7 +114,7 @@ export async function getMembersPageData(now: Date = new Date()): Promise<Member
   } catch (error) {
     const failure = getApiAuthFailure(error);
     if (failure) {
-      return { members: [], isConnected: false };
+      return createDisconnectedData();
     }
 
     throw error;
@@ -180,13 +176,18 @@ export async function getMembersPageData(now: Date = new Date()): Promise<Member
       };
     });
 
-    const data: MembersPageData = { members: rows, isConnected: true };
+    const data: MembersPageData = {
+      members: rows,
+      isConnected: true,
+      profileName: profile.displayName ?? "나",
+      profileEmail: profile.email ?? "이메일 정보 없음",
+    };
     writeCachedMembersPageData(cacheKey, data, nowMs);
     return data;
   } catch (error) {
     const failure = getFamilyRepositoryFailure(error);
     if (failure) {
-      return { members: [], isConnected: false };
+      return createDisconnectedData();
     }
 
     throw error;

@@ -60,9 +60,9 @@ async function joinFamily(inviteCode: string): Promise<CreateFamilySuccess | Cre
   }
 }
 
-export default function OnboardingPage() {
+export default function OnboardingPage({ initialMode = "create" }: { initialMode?: OnboardingMode }) {
   const router = useRouter();
-  const [mode, setMode] = useState<OnboardingMode>("create");
+  const [mode, setMode] = useState<OnboardingMode>(initialMode);
   const [familyName, setFamilyName] = useState("우리 가족");
   const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState<string | null>(null);

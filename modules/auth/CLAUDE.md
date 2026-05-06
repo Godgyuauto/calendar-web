@@ -22,6 +22,8 @@ Supabase Auth에만 비밀번호를 전달하고, 서버에서 기존 이메일 
 - `api/refresh-route.ts` — 서버에서 Supabase
   `POST /auth/v1/token?grant_type=refresh_token` 호출로 세션 갱신.
 - `api/logout-route.ts` — 서버에서 `access_token`(및 레거시 토큰 쿠키)을 만료.
+- `api/profile-route.ts` — 현재 가족 멤버의 Supabase Auth `display_name`을
+  service role로 갱신하고 홈/멤버/설정 서버 캐시를 무효화.
 - `api/auth-cookie.ts` — auth 쿠키 set/clear 옵션의 단일 출처.
 - `SessionRefreshClient.tsx` — 클라이언트에서 주기/포커스 기반
   `POST /api/auth/refresh` 호출 + `focus/visibility/pageshow`에서 `router.refresh()`
@@ -50,6 +52,5 @@ Supabase Auth에만 비밀번호를 전달하고, 서버에서 기존 이메일 
 ## 알려진 TODO
 
 - 온보딩 완료 플래그를 어디에 저장할지 결정(DB `family_members.onboarded_at`?)
-- 가입 후 새 가족 생성/초대 코드 참여 API와 UI 구현.
 - refresh-token `Max-Age`를 운영 정책에 맞춰 확정
   (`AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS`)

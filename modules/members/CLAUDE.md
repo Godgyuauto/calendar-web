@@ -4,7 +4,10 @@
 
 ## 구조
 
-- `MembersPage.tsx` — 서버 컴포넌트. `members-page-data.ts`의 read 모델을 렌더.
+- `MembersPage.tsx` — 서버 컴포넌트. 인증 확인 후 `members-page-data.ts` read 모델을 읽어
+  `MembersPageClient`로 전달.
+- `MembersPageClient.tsx` — 프로필 이름 변경 sheet, 초대 코드 참여 진입점, 멤버 탭 상호작용.
+- `MembersPageSections.tsx` — 멤버 목록, 주간 비교, 프로필 카드, 참여 버튼 표시 컴포넌트.
   세션이 없으면 `ensureAuthenticatedOrRedirect("/")`로 루트 로그인 화면으로 보낸다.
 - `members-page-data.ts` — family scope read 조립:
   - `family_members` 목록
@@ -30,7 +33,7 @@ handoff README에서 명시한 요구사항이므로 이 로직을 건드리지 
 ## 알려진 TODO
 
 1. profile 저장소가 생기면 비본인 display name fallback 제거.
-2. 초대 플로우 구현(현재 dashed 카드 버튼은 빈 핸들러).
+2. 가족 관리자용 초대 코드 생성 진입점은 설정 탭을 단일 출처로 유지.
 
 ## agent-safe edit guide
 

@@ -10,5 +10,6 @@ Current routes include:
 - `/api/members` (GET/PATCH)
 - `/api/settings/summary`
 - `/api/auth/login`, `/api/auth/logout`, `/api/auth/refresh`, `/api/auth/signup`
+- `/api/profile`
 - `/api/onboarding/family`, `/api/onboarding/invite`
 - `/api/invites`

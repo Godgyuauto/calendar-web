@@ -39,3 +39,7 @@ export function writeCachedSettingsPageData(
 ): void {
   getSettingsPageCache().set(cacheKey, { value, expiresAtMs: nowMs + SETTINGS_PAGE_TTL_MS });
 }
+
+export function invalidateSettingsPageCacheForUser(familyId: string, userId: string): void {
+  getSettingsPageCache().delete(`${familyId}:${userId}`);
+}

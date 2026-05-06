@@ -48,6 +48,57 @@ describe("buildMemberRows", () => {
     expect(rows.map((row) => row.roleLabel)).toEqual(["가족마스터", "가족원"]);
   });
 
+  it("filters verification and automation auth accounts from the visible roster", () => {
+    const profiles = new Map<string, MemberAuthProfile>([
+      ["self-user", { userId: "self-user", email: "me@example.com", displayName: "민규" }],
+      ["wife-user", { userId: "wife-user", email: "wife@example.com", displayName: "전윤정" }],
+      [
+        "codex-user",
+        {
+          userId: "codex-user",
+          email: "codex.verify.release@example.com",
+          displayName: "codex.verify.release",
+        },
+      ],
+      [
+        "push-user",
+        {
+          userId: "push-user",
+          email: "push.sender.20260425@example.com",
+          displayName: "push.sender.20260425",
+        },
+      ],
+    ]);
+
+    const rows = buildMemberRows({
+      members: [
+        ...members.slice(0, 2),
+        {
+          id: "codex-row",
+          userId: "codex-user",
+          role: "editor",
+          createdAt: "2026-05-04T00:00:00Z",
+          working: true,
+        },
+        {
+          id: "push-row",
+          userId: "push-user",
+          role: "editor",
+          createdAt: "2026-05-05T00:00:00Z",
+          working: true,
+        },
+      ],
+      profiles,
+      selfUserId: "self-user",
+      selfDisplayName: "민규",
+      todayKey: "2026-05-06",
+      weekDateKeys: ["2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-09"],
+      overrides: [],
+    });
+
+    expect(rows.map((row) => row.name)).toEqual(["민규", "전윤정"]);
+  });
+
   it("falls back to the email prefix for a member without display name", () => {
     const profiles = new Map<string, MemberAuthProfile>([
       ["self-user", { userId: "self-user", email: "me@example.com", displayName: "민규" }],

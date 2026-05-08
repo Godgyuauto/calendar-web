@@ -17,7 +17,14 @@ import {
   getTodayShiftSummary,
 } from "@/modules/shift";
 import { getServerAccessTokenFromCookies } from "@/modules/home/access-token";
+import {
+  buildAnnualLeaveHomeData,
+  type AnnualLeaveHomeData,
+} from "@/modules/home/home-annual-leave";
+import { readAnnualLeaveMetadataForHome } from "@/modules/home/home-annual-leave-metadata";
+import { toMonthRangeInSeoul, toYearDateRange } from "@/modules/home/home-date-range";
 import { readHomeFamilyCache, writeHomeFamilyCache } from "@/modules/home/home-family-cache";
+import { pickRoutineEventsInWindow } from "@/modules/home/home-routine-events";
 import {
   buildUpcomingScheduleItems,
   getUpcomingWindow,
@@ -37,6 +44,7 @@ export interface HomePageData {
   upcomingEvents: UpcomingScheduleItem[];
   calendarCells: CalendarCell[];
   realtimeTopic: string | null;
+  annualLeave: AnnualLeaveHomeData | null;
 }
 
 interface FamilyReadModel {
@@ -45,6 +53,7 @@ interface FamilyReadModel {
   routineEvents: FamilyEvent[];
   upcomingEvents: UpcomingScheduleItem[];
   realtimeTopic: string | null;
+  annualLeave: AnnualLeaveHomeData | null;
 }
 
 function emptyFamilyReadModel(): FamilyReadModel {
@@ -54,20 +63,7 @@ function emptyFamilyReadModel(): FamilyReadModel {
     routineEvents: [],
     upcomingEvents: [],
     realtimeTopic: null,
-  };
-}
-
-function toMonthRangeInSeoul(
-  currentYear: number,
-  currentMonth: number,
-): { startInclusive: string; endExclusive: string } {
-  const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
-  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
-  const mm = String(currentMonth).padStart(2, "0");
-  const nextMm = String(nextMonth).padStart(2, "0");
-  return {
-    startInclusive: `${currentYear}-${mm}-01T00:00:00+09:00`,
-    endExclusive: `${nextYear}-${nextMm}-01T00:00:00+09:00`,
+    annualLeave: null,
   };
 }
 
@@ -104,13 +100,16 @@ async function readFamilyModelFromSupabase(
   let routineEvents: FamilyEvent[];
   let upcomingEvents: UpcomingScheduleItem[];
   let overrides: ShiftOverride[];
+  let annualLeave: AnnualLeaveHomeData | null;
   const realtimeTopic = buildFamilyCalendarRealtimeTopic(auth.familyId);
   const monthRange = toMonthRangeInSeoul(currentYear, currentMonth);
+  const yearRange = toYearDateRange(currentYear);
   const monthStartMs = new Date(monthRange.startInclusive).getTime();
   const monthEndMs = new Date(monthRange.endExclusive).getTime();
   const upcomingWindow = getUpcomingWindow(toSeoulDateKey(now));
   try {
-    const [profile, monthEvents, monthOverrides, weekOverrides] = await Promise.all([
+    const [profile, monthEvents, monthOverrides, weekOverrides, yearMineOverrides, leaveMetadata] =
+      await Promise.all([
       readAuthProfileFromSupabase(auth),
       listFamilyEventsFromSupabase(auth, {
         startTimeGte: monthRange.startInclusive,
@@ -121,23 +120,22 @@ async function readFamilyModelFromSupabase(
         startDateGte: upcomingWindow.startDateKey,
         startDateLt: upcomingWindow.endDateKey,
       }),
+      listShiftOverridesFromSupabase(auth, {
+        startDateGte: yearRange.startDateKey,
+        startDateLt: yearRange.endDateKey,
+        scope: "mine",
+      }),
+      readAnnualLeaveMetadataForHome(auth.userId, auth.accessToken),
     ]);
     displayName = profile.displayName ?? "나";
-    routineEvents = monthEvents
-      .filter(
-        (event) =>
-          event.isRoutine && (() => {
-            const startMs = new Date(event.startTime).getTime();
-            return startMs >= monthStartMs && startMs < monthEndMs;
-          })(),
-      )
-      .slice(0, 8);
+    routineEvents = pickRoutineEventsInWindow(monthEvents, monthStartMs, monthEndMs);
     upcomingEvents = buildUpcomingScheduleItems({
       events: monthEvents,
       overrides: weekOverrides,
       window: upcomingWindow,
     });
     overrides = monthOverrides;
+    annualLeave = buildAnnualLeaveHomeData(leaveMetadata, yearMineOverrides, currentYear);
   } catch (error) {
     const failure = getFamilyRepositoryFailure(error);
     if (failure) {
@@ -153,6 +151,7 @@ async function readFamilyModelFromSupabase(
     routineEvents,
     upcomingEvents,
     realtimeTopic,
+    annualLeave,
   };
   writeHomeFamilyCache(cacheKey, model, nowMs);
   return model;
@@ -195,6 +194,7 @@ export async function getHomePageData(now: Date = new Date()): Promise<HomePageD
     upcomingEvents: familyModel.upcomingEvents,
     calendarCells,
     realtimeTopic: familyModel.realtimeTopic,
+    annualLeave: familyModel.annualLeave,
   };
 }
 export { DEFAULT_SHIFT_PATTERN_V1 };

@@ -3,6 +3,7 @@ import { HomeGreeting } from "@/modules/home/components/HomeGreeting";
 import { HomeMiniMonthCalendar } from "@/modules/home/components/HomeMiniMonthCalendar";
 import { TodayShiftCard } from "@/modules/home/components/TodayShiftCard";
 import { UpcomingEventsList } from "@/modules/home/components/UpcomingEventsList";
+import { AnnualLeaveCard } from "@/modules/home/components/AnnualLeaveCard";
 
 interface HomeDataSectionProps {
   homeDataPromise: Promise<HomePageData>;
@@ -38,6 +39,14 @@ export async function HomeTodayShiftDataSection({
   const data = await homeDataPromise;
 
   return <TodayShiftCard shift={data.todaySummary.finalShift} />;
+}
+
+export async function HomeAnnualLeaveDataSection({
+  homeDataPromise,
+}: HomeDataSectionProps) {
+  const data = await homeDataPromise;
+
+  return <AnnualLeaveCard data={data.annualLeave} />;
 }
 
 export async function HomeMonthGridDataSection({

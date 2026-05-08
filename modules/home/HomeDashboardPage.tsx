@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { hasServerSession } from "@/modules/auth/server-session";
 import {
   HomeGreetingDataSection,
+  HomeAnnualLeaveDataSection,
   HomeMonthGridDataSection,
   HomeTodayShiftDataSection,
   UpcomingEventsDataSection,
@@ -63,6 +64,9 @@ export default async function HomeDashboardPage() {
         </Suspense>
         <Suspense fallback={<HomeTodayShiftSkeleton />}>
           <HomeTodayShiftDataSection homeDataPromise={homeDataPromise} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <HomeAnnualLeaveDataSection homeDataPromise={homeDataPromise} />
         </Suspense>
         <section className="mx-5 overflow-hidden rounded-[16px] border border-[#e5e5ea] bg-white pb-3 pt-3">
           <div className="mb-1 flex items-center justify-between px-3">

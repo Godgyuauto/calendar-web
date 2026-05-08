@@ -3,7 +3,7 @@ import type { EventTypeOption } from "@/modules/calendar-ui/structured-override-
 import type { OverrideType } from "@/modules/shift";
 
 export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
-  { id: "vacation", emoji: "🏖", label: "휴가" },
+  { id: "vacation", emoji: "🏖", label: "연차" },
   { id: "training", emoji: "📚", label: "교육" },
   { id: "swap", emoji: "🔄", label: "교대" },
   { id: "extra", emoji: "⏰", label: "추가근무" },

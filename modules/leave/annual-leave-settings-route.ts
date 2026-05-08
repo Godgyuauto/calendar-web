@@ -1,22 +1,28 @@
 import { NextRequest } from "next/server";
-import { readAccessTokenClaims } from "@/modules/auth/access-token-claims";
-import {
-  readAuthUserMetadata,
-  updateAuthUserMetadata,
-} from "@/modules/auth/api/auth-user-metadata";
 import {
   parseSupabaseAuthError,
   resolveSupabaseAdminAuthConfig,
 } from "@/modules/auth/api/supabase-auth";
-import { validateProfileUpdateForm } from "@/modules/auth/api/profile-update-validation";
-import { responseForFailure, responseForNoContent, startApiLog } from "@/modules/family/api/_common";
+import {
+  readAuthUserMetadata,
+  updateAuthUserMetadata,
+} from "@/modules/auth/api/auth-user-metadata";
 import { resolveFamilyAuthOrResponseWithCookie } from "@/modules/family/api/_common/route-auth";
-import { invalidateHomeFamilyCacheForFamily } from "@/modules/home/home-family-cache";
-import { invalidateMembersPageCacheForUser } from "@/modules/members/members-page-cache";
+import {
+  responseForFailure,
+  responseForSuccess,
+  startApiLog,
+} from "@/modules/family/api/_common";
 import { invalidateSettingsPageCacheForUser } from "@/modules/settings/settings-page-cache";
+import { toAnnualLeaveMetadata } from "@/modules/leave/annual-leave-settings";
+import { validateAnnualLeaveSettingsForm } from "@/modules/leave/annual-leave-settings-validation";
 
 export async function PATCH(request: NextRequest) {
-  const logScope = startApiLog("/api/profile", "PATCH", "pnpm run verify:release:auth");
+  const logScope = startApiLog(
+    "/api/leave/settings",
+    "PATCH",
+    "pnpm run verify:release:auth",
+  );
   const config = resolveSupabaseAdminAuthConfig();
   if (!config) {
     return responseForFailure(
@@ -32,14 +38,14 @@ export async function PATCH(request: NextRequest) {
     return auth;
   }
 
-  let body: { displayName?: unknown };
+  let body: Record<string, unknown>;
   try {
-    body = (await request.json()) as { displayName?: unknown };
+    body = (await request.json()) as Record<string, unknown>;
   } catch {
     return responseForFailure(logScope, 400, "Invalid JSON body.", "VALIDATION", auth);
   }
 
-  const parsed = validateProfileUpdateForm(body);
+  const parsed = validateAnnualLeaveSettingsForm(body);
   if (!parsed.ok) {
     return responseForFailure(logScope, 400, parsed.message, "VALIDATION", auth);
   }
@@ -51,35 +57,28 @@ export async function PATCH(request: NextRequest) {
     return responseForFailure(
       logScope,
       503,
-      "프로필 정보를 읽지 못했습니다.",
+      "연차 설정 정보를 읽지 못했습니다.",
       "AUTH_UPSTREAM",
       auth,
     );
   }
 
-  const claims = readAccessTokenClaims(auth.accessToken);
   const nextMetadata = {
     ...currentMetadata,
-    display_name: parsed.data.displayName,
-    name: parsed.data.displayName,
-    email: claims?.email ?? currentMetadata.email,
+    ...toAnnualLeaveMetadata(parsed.data),
   };
-
   const upstreamResponse = await updateAuthUserMetadata(config, auth.userId, nextMetadata);
-
   if (!upstreamResponse.ok) {
     const upstreamBody = await upstreamResponse.json().catch(() => ({}));
     return responseForFailure(
       logScope,
       upstreamResponse.status,
-      parseSupabaseAuthError(upstreamBody, "프로필 저장에 실패했습니다."),
+      parseSupabaseAuthError(upstreamBody, "연차 설정 저장에 실패했습니다."),
       "AUTH_REJECT",
       auth,
     );
   }
 
-  invalidateHomeFamilyCacheForFamily(auth.familyId);
-  invalidateMembersPageCacheForUser(auth.familyId, auth.userId);
   invalidateSettingsPageCacheForUser(auth.familyId, auth.userId);
-  return responseForNoContent(logScope, 204, auth);
+  return responseForSuccess(logScope, { settings: parsed.data }, 200, auth);
 }

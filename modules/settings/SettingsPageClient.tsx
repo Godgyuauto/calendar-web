@@ -15,6 +15,7 @@ import {
   SignOutButton,
   WorkSettingsSection,
 } from "@/modules/settings/SettingsPageSections";
+import { AnnualLeaveSettingsSection } from "@/modules/settings/AnnualLeaveSettingsSection";
 import { usePushToggleController } from "@/modules/settings/push-toggle-controller";
 import type { SettingsPageData } from "@/modules/settings/settings-page-data";
 import { useWorkingToggleController } from "@/modules/settings/working-toggle-controller";
@@ -97,6 +98,7 @@ export default function SettingsPageClient({ data }: SettingsPageClientProps) {
       <div className="flex flex-col pb-10">
         <ProfileSection data={data} />
         <FamilyInfoSection data={data} onCreateInvite={() => void createInviteCode()} />
+        <AnnualLeaveSettingsSection initialData={data.annualLeave} />
         <WorkSettingsSection data={data} workingToggle={workingToggle} />
         <NotificationSettingsSection
           pushToggle={pushToggle}

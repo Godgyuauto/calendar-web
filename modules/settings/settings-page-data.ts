@@ -16,6 +16,11 @@ import {
 import { readAuthProfileFromSupabase } from "@/modules/family/api/settings";
 import { getFamilyRepositoryFailure } from "@/modules/family/api/_common";
 import { getServerAccessTokenFromCookies } from "@/modules/home/access-token";
+import { readAccessTokenClaims } from "@/modules/auth/access-token-claims";
+import { readAuthUserMetadata } from "@/modules/auth/api/auth-user-metadata";
+import { resolveSupabaseAdminAuthConfig } from "@/modules/auth/api/supabase-auth";
+import { ANNUAL_LEAVE_HOURS_PER_DAY, calculateAnnualLeaveBalance } from "@/modules/leave/annual-leave";
+import { parseAnnualLeaveSettings } from "@/modules/leave/annual-leave-settings";
 import { DEFAULT_SHIFT_PATTERN_V1 } from "@/modules/shift";
 import {
   readCachedSettingsPageData,
@@ -33,6 +38,15 @@ export interface SettingsPageData {
   shiftPatternLabel: string;
   shiftPatternSeedDate: string;
   hasPushSubscription: boolean;
+  annualLeave: AnnualLeaveSettingsPageData;
+}
+
+export interface AnnualLeaveSettingsPageData {
+  year: number;
+  totalDays: number;
+  remainingDays: number;
+  remainingHours: number;
+  remainingLabel: string;
 }
 
 function formatPatternLabel(patternId: string, version: string): string {
@@ -40,6 +54,7 @@ function formatPatternLabel(patternId: string, version: string): string {
 }
 
 function createDisconnectedData(): SettingsPageData {
+  const year = new Date().getFullYear();
   return {
     isConnected: false,
     profileName: "나",
@@ -54,6 +69,50 @@ function createDisconnectedData(): SettingsPageData {
     ),
     shiftPatternSeedDate: DEFAULT_SHIFT_PATTERN_V1.seedDate,
     hasPushSubscription: false,
+    annualLeave: {
+      year,
+      totalDays: 0,
+      remainingDays: 0,
+      remainingHours: 0,
+      remainingLabel: "0개",
+    },
+  };
+}
+
+async function readAnnualLeaveMetadata(
+  userId: string,
+  accessToken: string,
+): Promise<Record<string, unknown>> {
+  const config = resolveSupabaseAdminAuthConfig();
+  if (config) {
+    try {
+      return await readAuthUserMetadata(config, userId);
+    } catch {
+      // Fall back to JWT metadata so settings still render when Admin API is unavailable.
+    }
+  }
+
+  const claims = readAccessTokenClaims(accessToken);
+  return claims?.userMetadata ?? {};
+}
+
+function buildAnnualLeaveData(
+  metadata: Record<string, unknown>,
+): AnnualLeaveSettingsPageData {
+  const fallbackYear = new Date().getFullYear();
+  const settings = parseAnnualLeaveSettings(metadata, fallbackYear);
+  const balance = calculateAnnualLeaveBalance({
+    totalDays: settings.totalHours / ANNUAL_LEAVE_HOURS_PER_DAY,
+    usedHoursBeforeApp: settings.usedHoursBeforeApp,
+    appUsages: [],
+  });
+
+  return {
+    year: settings.year,
+    totalDays: Math.floor(settings.totalHours / ANNUAL_LEAVE_HOURS_PER_DAY),
+    remainingDays: balance.remainingDays,
+    remainingHours: balance.remainingExtraHours,
+    remainingLabel: balance.remainingLabel,
   };
 }
 
@@ -83,13 +142,14 @@ export async function getSettingsPageData(): Promise<SettingsPageData> {
   }
 
   try {
-    const [profile, familyName, activePattern, hasPushSubscription, members] =
+    const [profile, familyName, activePattern, hasPushSubscription, members, leaveMetadata] =
       await Promise.all([
         readAuthProfileFromSupabase(auth),
         readFamilyNameFromSupabase(auth),
         readActiveShiftPatternFromSupabase(auth),
         readOwnPushSubscriptionExistsFromSupabase(auth),
         listFamilyMembersFromSupabase(auth),
+        readAnnualLeaveMetadata(auth.userId, auth.accessToken),
       ]);
 
     const self = members.find((member) => member.userId === auth.userId);
@@ -116,6 +176,7 @@ export async function getSettingsPageData(): Promise<SettingsPageData> {
       ),
       shiftPatternSeedDate: resolvedPattern.seedDate,
       hasPushSubscription,
+      annualLeave: buildAnnualLeaveData(leaveMetadata),
     };
     writeCachedSettingsPageData(cacheKey, data, nowMs);
     return data;

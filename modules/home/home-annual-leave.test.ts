@@ -70,6 +70,58 @@ describe("buildAnnualLeaveHomeData", () => {
     });
   });
 
+  it("builds annual leave history for tracked vacation overrides", () => {
+    const data = buildAnnualLeaveHomeData(
+      {
+        [ANNUAL_LEAVE_METADATA_KEYS.year]: 2026,
+        [ANNUAL_LEAVE_METADATA_KEYS.totalHours]: 120,
+        [ANNUAL_LEAVE_METADATA_KEYS.usedHoursBeforeApp]: 0,
+      },
+      [
+        vacation({
+          date: "2026-05-09",
+          label: "대구 결혼식",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: true,
+            title: "대구 결혼식",
+            leave_deduction_hours: 4,
+            leave_deduction_label: "반차",
+          }),
+        }),
+        vacation({
+          date: "2026-05-05",
+          label: "어린이날 연차",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: true,
+            title: "어린이날 연차",
+            leave_deduction_hours: 8,
+            leave_deduction_label: "연차",
+          }),
+        }),
+      ],
+      2026,
+    );
+
+    expect(data?.history).toEqual([
+      {
+        date: "2026-05-05",
+        title: "어린이날 연차",
+        amountLabel: "공휴일 · 차감 없음",
+      },
+      {
+        date: "2026-05-09",
+        title: "대구 결혼식",
+        amountLabel: "반차(4시간)",
+      },
+    ]);
+  });
+
   it("returns null before annual leave is configured", () => {
     expect(buildAnnualLeaveHomeData({}, [], 2026)).toBeNull();
   });

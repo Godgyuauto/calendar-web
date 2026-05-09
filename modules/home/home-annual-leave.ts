@@ -3,14 +3,38 @@ import {
   calculateAnnualLeaveBalance,
 } from "@/modules/leave/annual-leave";
 import { parseAnnualLeaveSettings } from "@/modules/leave/annual-leave-settings";
-import { getAnnualLeaveUsagesFromOverrides } from "@/modules/leave/annual-leave-usage";
+import {
+  getAnnualLeaveUsageDetailsFromOverrides,
+  getAnnualLeaveUsagesFromOverrides,
+} from "@/modules/leave/annual-leave-usage";
 import type { ShiftOverride } from "@/modules/shift";
+
+export interface AnnualLeaveHistoryItem {
+  date: string;
+  title: string;
+  amountLabel: string;
+}
 
 export interface AnnualLeaveHomeData {
   year: number;
   totalDays: number;
   usedHours: number;
   remainingLabel: string;
+  history: AnnualLeaveHistoryItem[];
+}
+
+function formatHistoryAmount(input: {
+  hours: number;
+  deductionLabel: string;
+  exemptReason: "public_holiday" | "company_holiday" | null;
+}): string {
+  if (input.exemptReason === "public_holiday") {
+    return "공휴일 · 차감 없음";
+  }
+  if (input.exemptReason === "company_holiday") {
+    return "회사 휴일 · 차감 없음";
+  }
+  return `${input.deductionLabel}(${input.hours}시간)`;
 }
 
 export function buildAnnualLeaveHomeData(
@@ -27,6 +51,17 @@ export function buildAnnualLeaveHomeData(
     (override) => override.date >= settings.trackingStartDate,
   );
   const appUsages = getAnnualLeaveUsagesFromOverrides(trackedOverrides, settings.year);
+  const history = getAnnualLeaveUsageDetailsFromOverrides(
+    trackedOverrides,
+    settings.year,
+  )
+    .slice()
+    .sort((first, second) => first.date.localeCompare(second.date))
+    .map((usage) => ({
+      date: usage.date,
+      title: usage.title,
+      amountLabel: formatHistoryAmount(usage),
+    }));
   const balance = calculateAnnualLeaveBalance({
     totalDays: settings.totalHours / ANNUAL_LEAVE_HOURS_PER_DAY,
     usedHoursBeforeApp: settings.usedHoursBeforeApp,
@@ -38,5 +73,6 @@ export function buildAnnualLeaveHomeData(
     totalDays: Math.floor(settings.totalHours / ANNUAL_LEAVE_HOURS_PER_DAY),
     usedHours: balance.usedHours,
     remainingLabel: balance.remainingLabel,
+    history,
   };
 }

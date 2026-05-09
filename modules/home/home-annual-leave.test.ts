@@ -50,6 +50,26 @@ describe("buildAnnualLeaveHomeData", () => {
     });
   });
 
+  it("does not subtract 2026 vacation overrides before May", () => {
+    const data = buildAnnualLeaveHomeData(
+      {
+        [ANNUAL_LEAVE_METADATA_KEYS.year]: 2026,
+        [ANNUAL_LEAVE_METADATA_KEYS.totalHours]: 120,
+        [ANNUAL_LEAVE_METADATA_KEYS.usedHoursBeforeApp]: 0,
+      },
+      [
+        vacation({ date: "2026-04-30" }),
+        vacation({ date: "2026-05-04" }),
+      ],
+      2026,
+    );
+
+    expect(data).toMatchObject({
+      usedHours: 8,
+      remainingLabel: "14개",
+    });
+  });
+
   it("returns null before annual leave is configured", () => {
     expect(buildAnnualLeaveHomeData({}, [], 2026)).toBeNull();
   });

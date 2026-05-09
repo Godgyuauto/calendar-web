@@ -1,5 +1,8 @@
 import { ANNUAL_LEAVE_HOURS_PER_DAY } from "@/modules/leave/annual-leave";
-import type { AnnualLeaveSettings } from "@/modules/leave/annual-leave-settings";
+import {
+  getDefaultAnnualLeaveTrackingStartDate,
+  type AnnualLeaveSettings,
+} from "@/modules/leave/annual-leave-settings";
 
 export type AnnualLeaveSettingsValidationResult =
   | { ok: true; data: AnnualLeaveSettings }
@@ -54,6 +57,7 @@ export function validateAnnualLeaveSettingsForm(
       year,
       totalHours,
       usedHoursBeforeApp: totalHours - remainingTotalHours,
+      trackingStartDate: getDefaultAnnualLeaveTrackingStartDate(year),
     },
   };
 }

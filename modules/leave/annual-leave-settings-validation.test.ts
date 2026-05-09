@@ -16,6 +16,7 @@ describe("validateAnnualLeaveSettingsForm", () => {
         year: 2026,
         totalHours: 120,
         usedHoursBeforeApp: 1,
+        trackingStartDate: "2026-05-01",
       },
     });
   });

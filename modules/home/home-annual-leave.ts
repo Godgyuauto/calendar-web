@@ -23,7 +23,10 @@ export function buildAnnualLeaveHomeData(
     return null;
   }
 
-  const appUsages = getAnnualLeaveUsagesFromOverrides(overrides, settings.year);
+  const trackedOverrides = overrides.filter(
+    (override) => override.date >= settings.trackingStartDate,
+  );
+  const appUsages = getAnnualLeaveUsagesFromOverrides(trackedOverrides, settings.year);
   const balance = calculateAnnualLeaveBalance({
     totalDays: settings.totalHours / ANNUAL_LEAVE_HOURS_PER_DAY,
     usedHoursBeforeApp: settings.usedHoursBeforeApp,

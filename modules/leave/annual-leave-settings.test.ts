@@ -11,6 +11,7 @@ describe("annual leave settings metadata", () => {
       year: 2026,
       totalHours: 0,
       usedHoursBeforeApp: 0,
+      trackingStartDate: "2026-05-01",
     });
   });
 
@@ -28,7 +29,12 @@ describe("annual leave settings metadata", () => {
       year: 2026,
       totalHours: 120,
       usedHoursBeforeApp: 9,
+      trackingStartDate: "2026-05-01",
     });
+  });
+
+  it("uses January 1 as the tracking start from 2027", () => {
+    expect(parseAnnualLeaveSettings({}, 2027).trackingStartDate).toBe("2027-01-01");
   });
 
   it("serializes settings with stable metadata keys", () => {
@@ -37,11 +43,13 @@ describe("annual leave settings metadata", () => {
         year: 2026,
         totalHours: 120,
         usedHoursBeforeApp: 1,
+        trackingStartDate: "2026-05-01",
       }),
     ).toEqual({
       [ANNUAL_LEAVE_METADATA_KEYS.year]: 2026,
       [ANNUAL_LEAVE_METADATA_KEYS.totalHours]: 120,
       [ANNUAL_LEAVE_METADATA_KEYS.usedHoursBeforeApp]: 1,
+      [ANNUAL_LEAVE_METADATA_KEYS.trackingStartDate]: "2026-05-01",
     });
   });
 });

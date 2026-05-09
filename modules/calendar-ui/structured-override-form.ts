@@ -4,6 +4,7 @@ import {
   type StructuredOverrideNoteV1,
 } from "@/modules/calendar-ui/structured-override-note";
 import { getEventTypeOption } from "@/modules/calendar-ui/structured-override-options";
+import { normalizeLeaveDeduction } from "@/modules/leave/annual-leave-deduction";
 import {
   toDateTimeFromDateAndTime,
   toDateInputOrDefault,
@@ -43,6 +44,9 @@ export function toStructuredOverrideFormState(input: {
     remindAt: toDateTimeLocalOrNull(note?.remind_at) ?? "",
     title: note?.title ?? fallbackTitle,
     memo: note?.memo ?? "",
+    leaveDeductionHours: note?.leave_deduction_hours ?? 8,
+    leaveDeductionLabel: note?.leave_deduction_label ?? "연차",
+    leaveExemptFromDeduction: note?.leave_exempt_from_deduction ?? false,
   };
 }
 
@@ -58,6 +62,10 @@ export function toOverrideSubmitPayload(
   const hasRange = Boolean(startAt && endAt);
   const eventLabel = title || getEventTypeOption(form.eventType).label;
   const remindAt = form.remindAt.trim();
+  const leaveDeduction =
+    form.eventType === "vacation"
+      ? normalizeLeaveDeduction(form.leaveDeductionHours ?? 8)
+      : null;
   const notePayload: StructuredOverrideNoteV1 = {
     schema: "calendar_override_v1",
     event_type: form.eventType,
@@ -68,6 +76,9 @@ export function toOverrideSubmitPayload(
     remind_at: remindAt ? toDateTimeLocalOrNull(remindAt) : null,
     title,
     memo,
+    leave_deduction_hours: leaveDeduction?.hours,
+    leave_deduction_label: leaveDeduction?.label,
+    leave_exempt_from_deduction: form.leaveExemptFromDeduction ?? false,
   };
 
   return {

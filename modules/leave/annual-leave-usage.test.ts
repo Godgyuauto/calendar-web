@@ -46,6 +46,30 @@ describe("getAnnualLeaveUsagesFromOverrides", () => {
     expect(usages).toEqual([{ hours: 5 }]);
   });
 
+  it("uses explicit annual leave deduction hours before time range", () => {
+    const usages = getAnnualLeaveUsagesFromOverrides(
+      [
+        override({
+          startTime: "2026-05-04T10:00",
+          endTime: "2026-05-04T15:00",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: false,
+            start_at: "2026-05-04T10:00",
+            end_at: "2026-05-04T15:00",
+            leave_deduction_hours: 4,
+            leave_deduction_label: "반차",
+          }),
+        }),
+      ],
+      2026,
+    );
+
+    expect(usages).toEqual([{ hours: 4 }]);
+  });
+
   it("ignores non-vacation overrides and other years", () => {
     const usages = getAnnualLeaveUsagesFromOverrides(
       [

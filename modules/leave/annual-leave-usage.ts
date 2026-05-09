@@ -34,6 +34,10 @@ export function getAnnualLeaveUsageFromOverride(
     return null;
   }
 
+  if (note?.leave_deduction_hours) {
+    return { hours: Math.min(ANNUAL_LEAVE_HOURS_PER_DAY, note.leave_deduction_hours) };
+  }
+
   const allDay = note?.all_day ?? !(override.startTime && override.endTime);
   if (allDay) {
     return { hours: ANNUAL_LEAVE_HOURS_PER_DAY };

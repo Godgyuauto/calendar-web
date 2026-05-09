@@ -1,4 +1,9 @@
 import type { OverrideType, ShiftCode } from "@/modules/shift";
+import type { LeaveDeductionLabel } from "@/modules/leave/annual-leave-deduction";
+import {
+  readLeaveDeductionLabel,
+  readNumber,
+} from "@/modules/family/domain/structured-override-note-leave";
 
 export type ShiftChange = ShiftCode | "KEEP";
 
@@ -12,6 +17,9 @@ export interface StructuredOverrideNoteV1 {
   remind_at: string | null;
   title: string;
   memo: string;
+  leave_deduction_hours?: number | null;
+  leave_deduction_label?: LeaveDeductionLabel | null;
+  leave_exempt_from_deduction?: boolean;
 }
 
 const OVERRIDE_TYPES: OverrideType[] = [
@@ -120,6 +128,12 @@ function hasStructuredFields(source: Record<string, unknown>): boolean {
     "endAt",
     "remind_at",
     "remindAt",
+    "leave_deduction_hours",
+    "leaveDeductionHours",
+    "leave_deduction_label",
+    "leaveDeductionLabel",
+    "leave_exempt_from_deduction",
+    "leaveExemptFromDeduction",
   ];
 
   return knownKeys.some((key) => key in source);
@@ -171,5 +185,15 @@ export function parseStructuredOverrideNote(
     remind_at: readDateTimeLike(parsed, ["remind_at", "remindAt", "alarm_at", "alarmAt"]),
     title: readString(parsed, ["title", "event_title", "eventTitle", "label"]) ?? "",
     memo: readString(parsed, ["memo", "description", "desc"]) ?? "",
+    leave_deduction_hours: readNumber(parsed, [
+      "leave_deduction_hours",
+      "leaveDeductionHours",
+    ]),
+    leave_deduction_label: readLeaveDeductionLabel(
+      readString(parsed, ["leave_deduction_label", "leaveDeductionLabel"]),
+    ),
+    leave_exempt_from_deduction:
+      readBoolean(parsed, ["leave_exempt_from_deduction", "leaveExemptFromDeduction"]) ??
+      false,
   };
 }

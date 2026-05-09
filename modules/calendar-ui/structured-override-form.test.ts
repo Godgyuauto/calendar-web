@@ -92,4 +92,52 @@ describe("structured override form mapping", () => {
     expect(note.title).toBe("회식");
     expect(note.memo).toBe("제조랑 회식");
   });
+
+  it("stores default annual leave as eight deductible hours", () => {
+    const payload = toOverrideSubmitPayload("2026-05-09", {
+      eventType: "vacation",
+      shiftChange: "OFF",
+      startDate: "2026-05-09",
+      endDate: "2026-05-09",
+      startAt: "",
+      endAt: "",
+      remindAt: "",
+      title: "",
+      memo: "",
+      leaveDeductionHours: 8,
+      leaveDeductionLabel: "연차",
+      leaveExemptFromDeduction: false,
+    });
+    const note = JSON.parse(payload.note) as {
+      leave_deduction_hours: number;
+      leave_deduction_label: string;
+    };
+
+    expect(note.leave_deduction_hours).toBe(8);
+    expect(note.leave_deduction_label).toBe("연차");
+  });
+
+  it("normalizes four hourly leave hours to half-day leave", () => {
+    const payload = toOverrideSubmitPayload("2026-05-09", {
+      eventType: "vacation",
+      shiftChange: "OFF",
+      startDate: "2026-05-09",
+      endDate: "2026-05-09",
+      startAt: "12:30",
+      endAt: "17:00",
+      remindAt: "",
+      title: "",
+      memo: "",
+      leaveDeductionHours: 4,
+      leaveDeductionLabel: "시간 연차",
+      leaveExemptFromDeduction: false,
+    });
+    const note = JSON.parse(payload.note) as {
+      leave_deduction_hours: number;
+      leave_deduction_label: string;
+    };
+
+    expect(note.leave_deduction_hours).toBe(4);
+    expect(note.leave_deduction_label).toBe("반차");
+  });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import { AnnualLeaveDeductionSection } from "@/modules/calendar-ui/AnnualLeaveDeductionSection";
 import { ReminderSection } from "@/modules/calendar-ui/ReminderSection";
 import { TimeRangeSection } from "@/modules/calendar-ui/TimeRangeSection";
 import {
@@ -21,6 +22,17 @@ interface StructuredFieldsSectionProps {
 }
 
 const OFF_REASON_IDS = new Set<OverrideType>(["vacation", "sick", "custom"]);
+
+function withAnnualLeaveDefaults(
+  current: StructuredOverrideFormState,
+): StructuredOverrideFormState {
+  return {
+    ...current,
+    leaveDeductionHours: current.leaveDeductionHours ?? 8,
+    leaveDeductionLabel: current.leaveDeductionLabel ?? "연차",
+    leaveExemptFromDeduction: current.leaveExemptFromDeduction ?? false,
+  };
+}
 
 function eventTypeForShiftChange(
   shiftChange: ShiftCode | "KEEP",
@@ -48,11 +60,11 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
             key={option}
             active={form.shiftChange === option}
             onClick={() =>
-              setForm((current) => ({
-                ...current,
-                shiftChange: option,
-                eventType: eventTypeForShiftChange(option, current.eventType),
-              }))
+              setForm((current) => {
+                const nextEventType = eventTypeForShiftChange(option, current.eventType);
+                const next = { ...current, shiftChange: option, eventType: nextEventType };
+                return nextEventType === "vacation" ? withAnnualLeaveDefaults(next) : next;
+              })
             }
             variant="segment"
           >
@@ -69,7 +81,13 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
               <Chip
                 key={option.id}
                 active={form.eventType === option.id}
-                onClick={() => setForm((current) => ({ ...current, eventType: option.id }))}
+                onClick={() =>
+                  setForm((current) =>
+                    option.id === "vacation"
+                      ? withAnnualLeaveDefaults({ ...current, eventType: option.id })
+                      : { ...current, eventType: option.id },
+                  )
+                }
                 className="w-full flex-col !px-2 !py-2"
               >
                 <span className="text-[16px] leading-none">{option.emoji}</span>
@@ -77,6 +95,9 @@ export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSecti
               </Chip>
             ))}
           </div>
+          {form.eventType === "vacation" ? (
+            <AnnualLeaveDeductionSection form={form} setForm={setForm} />
+          ) : null}
         </>
       ) : null}
 

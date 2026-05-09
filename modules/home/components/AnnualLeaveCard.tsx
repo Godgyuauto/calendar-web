@@ -42,18 +42,17 @@ export function AnnualLeaveCard({ data }: { data: AnnualLeaveHomeData | null }) 
             {data.history.length > 0 ? (
               data.history.map((item, index) => (
                 <div
-                  key={`${item.date}:${item.title}:${index}`}
+                  key={`${item.date}:${index}`}
                   className="border-b border-[#f2f2f7] px-4 py-3 last:border-b-0"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-[14px] font-bold text-[#1a1a1a]">{item.title}</p>
-                    <p className="shrink-0 text-[12px] font-semibold text-[#007AFF]">
+                    <p className="text-[14px] font-bold text-[#1a1a1a]">
                       {formatHistoryDate(item.date)}
                     </p>
+                    <p className="shrink-0 text-[12px] font-semibold text-[#007AFF]">
+                      {item.amountLabel}
+                    </p>
                   </div>
-                  <p className="mt-1 text-[12px] font-semibold text-[#8e8e93]">
-                    {item.amountLabel}
-                  </p>
                 </div>
               ))
             ) : (

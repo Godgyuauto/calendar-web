@@ -11,7 +11,6 @@ import type { ShiftOverride } from "@/modules/shift";
 
 export interface AnnualLeaveHistoryItem {
   date: string;
-  title: string;
   amountLabel: string;
 }
 
@@ -59,7 +58,6 @@ export function buildAnnualLeaveHomeData(
     .sort((first, second) => first.date.localeCompare(second.date))
     .map((usage) => ({
       date: usage.date,
-      title: usage.title,
       amountLabel: formatHistoryAmount(usage),
     }));
   const balance = calculateAnnualLeaveBalance({

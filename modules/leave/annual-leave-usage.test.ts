@@ -13,7 +13,7 @@ function override(input: Partial<ShiftOverride>): ShiftOverride {
     startTime: input.startTime ?? null,
     endTime: input.endTime ?? null,
     note: input.note ?? null,
-    createdAt: "2026-05-01T00:00:00+09:00",
+    createdAt: input.createdAt ?? "2026-05-01T00:00:00+09:00",
   };
 }
 
@@ -59,6 +59,71 @@ describe("getAnnualLeaveUsagesFromOverrides", () => {
             all_day: false,
             start_at: "2026-05-04T10:00",
             end_at: "2026-05-04T15:00",
+            leave_deduction_hours: 4,
+            leave_deduction_label: "반차",
+          }),
+        }),
+      ],
+      2026,
+    );
+
+    expect(usages).toEqual([{ hours: 4 }]);
+  });
+
+  it("deducts annual leave once per date using the earliest vacation event", () => {
+    const usages = getAnnualLeaveUsagesFromOverrides(
+      [
+        override({
+          id: "late-half-day",
+          startTime: "2026-05-09T18:00:00+09:00",
+          endTime: "2026-05-09T22:00:00+09:00",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: false,
+            start_at: "2026-05-09T18:00",
+            end_at: "2026-05-09T22:00",
+            leave_deduction_hours: 4,
+            leave_deduction_label: "반차",
+          }),
+        }),
+        override({
+          id: "early-full-day",
+          startTime: "2026-05-09T09:00:00+09:00",
+          endTime: "2026-05-09T17:00:00+09:00",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: false,
+            start_at: "2026-05-09T09:00",
+            end_at: "2026-05-09T17:00",
+            leave_deduction_hours: 8,
+            leave_deduction_label: "연차",
+          }),
+        }),
+      ],
+      2026,
+    );
+
+    expect(usages).toEqual([{ hours: 8 }]);
+  });
+
+  it("uses the next earliest vacation event when the earliest one is absent", () => {
+    const usages = getAnnualLeaveUsagesFromOverrides(
+      [
+        override({
+          id: "late-half-day",
+          startTime: "2026-05-09T18:00:00+09:00",
+          endTime: "2026-05-09T22:00:00+09:00",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: false,
+            start_at: "2026-05-09T18:00",
+            end_at: "2026-05-09T22:00",
             leave_deduction_hours: 4,
             leave_deduction_label: "반차",
           }),

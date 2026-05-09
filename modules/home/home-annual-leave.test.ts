@@ -5,7 +5,7 @@ import { ANNUAL_LEAVE_METADATA_KEYS } from "@/modules/leave/annual-leave-setting
 
 function vacation(input: Partial<ShiftOverride>): ShiftOverride {
   return {
-    id: "override-1",
+    id: input.id ?? "override-1",
     userId: "user-1",
     date: input.date ?? "2026-05-04",
     overrideType: "vacation",
@@ -14,7 +14,7 @@ function vacation(input: Partial<ShiftOverride>): ShiftOverride {
     startTime: input.startTime ?? null,
     endTime: input.endTime ?? null,
     note: input.note ?? null,
-    createdAt: "2026-05-01T00:00:00+09:00",
+    createdAt: input.createdAt ?? "2026-05-01T00:00:00+09:00",
   };
 }
 
@@ -111,15 +111,74 @@ describe("buildAnnualLeaveHomeData", () => {
     expect(data?.history).toEqual([
       {
         date: "2026-05-05",
-        title: "어린이날 연차",
         amountLabel: "공휴일 · 차감 없음",
       },
       {
         date: "2026-05-09",
-        title: "대구 결혼식",
         amountLabel: "반차(4시간)",
       },
     ]);
+  });
+
+  it("builds one title-free annual leave history row per date", () => {
+    const data = buildAnnualLeaveHomeData(
+      {
+        [ANNUAL_LEAVE_METADATA_KEYS.year]: 2026,
+        [ANNUAL_LEAVE_METADATA_KEYS.totalHours]: 120,
+        [ANNUAL_LEAVE_METADATA_KEYS.usedHoursBeforeApp]: 0,
+      },
+      [
+        vacation({
+          id: "late",
+          date: "2026-05-09",
+          label: "저녁 일정",
+          startTime: "2026-05-09T18:00:00+09:00",
+          endTime: "2026-05-09T22:00:00+09:00",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: false,
+            start_at: "2026-05-09T18:00",
+            end_at: "2026-05-09T22:00",
+            title: "저녁 일정",
+            leave_deduction_hours: 4,
+            leave_deduction_label: "반차",
+          }),
+        }),
+        vacation({
+          id: "early",
+          date: "2026-05-09",
+          label: "오전 일정",
+          startTime: "2026-05-09T09:00:00+09:00",
+          endTime: "2026-05-09T17:00:00+09:00",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: false,
+            start_at: "2026-05-09T09:00",
+            end_at: "2026-05-09T17:00",
+            title: "오전 일정",
+            leave_deduction_hours: 8,
+            leave_deduction_label: "연차",
+          }),
+        }),
+      ],
+      2026,
+    );
+
+    expect(data?.history).toEqual([
+      {
+        date: "2026-05-09",
+        amountLabel: "연차(8시간)",
+      },
+    ]);
+    expect(data?.history[0]).not.toHaveProperty("title");
+    expect(data).toMatchObject({
+      usedHours: 8,
+      remainingLabel: "14개",
+    });
   });
 
   it("returns null before annual leave is configured", () => {

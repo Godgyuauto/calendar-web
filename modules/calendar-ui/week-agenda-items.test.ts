@@ -8,6 +8,7 @@ function cell(input: Partial<CalendarCell> & Pick<CalendarCell, "date">): Calend
     day: Number(input.date.slice(8, 10)),
     weekday: 0,
     isCurrentMonth: true,
+    holiday: null,
     ...input,
   };
 }

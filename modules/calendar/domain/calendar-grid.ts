@@ -1,10 +1,15 @@
 import { DayShiftSummary } from "@/modules/shift";
+import {
+  getKoreanPublicHoliday,
+  type KoreanPublicHoliday,
+} from "@/modules/leave/korean-public-holidays";
 
 export interface CalendarCell {
   date: string;
   day: number;
   isCurrentMonth: boolean;
   weekday: number;
+  holiday: KoreanPublicHoliday | null;
   shift?: DayShiftSummary;
 }
 
@@ -34,6 +39,7 @@ export function buildMonthCalendarGrid(input: {
       day,
       isCurrentMonth: false,
       weekday: cells.length % 7,
+      holiday: getKoreanPublicHoliday(date),
     });
   }
 
@@ -44,6 +50,7 @@ export function buildMonthCalendarGrid(input: {
       day,
       isCurrentMonth: true,
       weekday: cells.length % 7,
+      holiday: getKoreanPublicHoliday(date),
       shift: shiftByDate.get(date),
     });
   }
@@ -58,6 +65,7 @@ export function buildMonthCalendarGrid(input: {
       day,
       isCurrentMonth: false,
       weekday: cells.length % 7,
+      holiday: getKoreanPublicHoliday(date),
     });
   }
 

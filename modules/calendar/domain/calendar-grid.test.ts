@@ -125,3 +125,23 @@ describe("buildMonthCalendarGrid — shift attachment", () => {
     expect(cells.find((c) => c.date === "2026-04-30")?.shift).toBe(s2);
   });
 });
+
+describe("buildMonthCalendarGrid — public holidays", () => {
+  it("attaches Korean public holiday metadata to matching cells", () => {
+    const cells = buildMonthCalendarGrid({ year: 2026, month: 5, shifts: [] });
+
+    expect(cells.find((c) => c.date === "2026-05-05")?.holiday).toEqual({
+      name: "어린이날",
+    });
+    expect(cells.find((c) => c.date === "2026-05-25")?.holiday).toEqual({
+      name: "부처님오신날 대체공휴일",
+    });
+  });
+
+  it("leaves ordinary weekends without holiday metadata", () => {
+    const cells = buildMonthCalendarGrid({ year: 2026, month: 5, shifts: [] });
+
+    expect(cells.find((c) => c.date === "2026-05-02")?.holiday).toBeNull();
+    expect(cells.find((c) => c.date === "2026-05-03")?.holiday).toBeNull();
+  });
+});

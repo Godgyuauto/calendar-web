@@ -7,9 +7,12 @@ interface HomeMiniMonthCalendarProps {
 
 const WEEKDAY_HEADERS = ["일", "월", "화", "수", "목", "금", "토"];
 
-function getDayTextColor(weekday: number, muted: boolean): string {
+function getDayTextColor(weekday: number, muted: boolean, holiday = false): string {
   if (muted) {
     return "text-[#c7c7cc]";
+  }
+  if (holiday) {
+    return "text-[#ff3b30]";
   }
   if (weekday === 0) {
     return "text-[#ff3b30]";
@@ -42,9 +45,10 @@ export function HomeMiniMonthCalendar({
         {cells.map((cell) => {
           const isToday = cell.date === todayKey;
           const hasEvent = cell.isCurrentMonth && Boolean(cell.shift?.override);
+          const hasHoliday = cell.isCurrentMonth && Boolean(cell.holiday);
           const dayTextColor = isToday
             ? "text-white"
-            : getDayTextColor(cell.weekday, !cell.isCurrentMonth);
+            : getDayTextColor(cell.weekday, !cell.isCurrentMonth, hasHoliday);
           return (
             <div
               key={cell.date}

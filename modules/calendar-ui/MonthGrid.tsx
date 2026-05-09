@@ -15,8 +15,9 @@ interface MonthGridProps {
 
 const WEEKDAY_HEADERS = ["일", "월", "화", "수", "목", "금", "토"];
 
-function weekdayColor(weekday: number, muted: boolean): string {
+function weekdayColor(weekday: number, muted: boolean, holiday = false): string {
   if (muted) return "text-[#c7c7cc]";
+  if (holiday) return "text-[#ff3b30]";
   if (weekday === 0) return "text-[#ff3b30]";
   if (weekday === 6) return "text-[#007AFF]";
   return "text-[#1a1a1a]";
@@ -48,6 +49,7 @@ export function MonthGrid({
           const shift = cell.shift;
           const isToday = cell.date === todayKey;
           const isSelected = selectedDateKey === cell.date;
+          const hasHoliday = cell.isCurrentMonth && Boolean(cell.holiday);
           const palette = shift ? SHIFT_PALETTE[shift.finalShift] : undefined;
           const overrideBadges = cell.isCurrentMonth
             ? buildMonthGridOverrideBadges({
@@ -77,11 +79,16 @@ export function MonthGrid({
                     ? "bg-[#007AFF] font-semibold text-white"
                     : isSelected
                       ? "bg-[#e8f0fe] font-semibold text-[#007AFF]"
-                    : weekdayColor(cell.weekday, !cell.isCurrentMonth)
+                    : weekdayColor(cell.weekday, !cell.isCurrentMonth, hasHoliday)
                 }`}
               >
                 {cell.day}
               </span>
+              {hasHoliday ? (
+                <span className="max-w-full truncate text-[9px] font-semibold text-[#ff3b30]">
+                  {cell.holiday?.name}
+                </span>
+              ) : null}
               {shift && cell.isCurrentMonth && palette ? (
                 <span
                   className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold ${

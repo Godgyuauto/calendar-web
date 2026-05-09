@@ -43,11 +43,20 @@ export function MonthCalendarSection({
           >
             <p
               className={`font-mono text-xs ${
-                cell.isCurrentMonth ? "text-slate-600" : "text-slate-400"
+                cell.holiday && cell.isCurrentMonth
+                  ? "text-red-500"
+                  : cell.isCurrentMonth
+                    ? "text-slate-600"
+                    : "text-slate-400"
               }`}
             >
               {cell.day}일
             </p>
+            {cell.holiday && cell.isCurrentMonth ? (
+              <p className="mt-1 truncate text-[10px] font-semibold text-red-500">
+                {cell.holiday.name}
+              </p>
+            ) : null}
 
             {cell.shift ? (
               <>

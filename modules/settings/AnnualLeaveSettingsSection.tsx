@@ -9,6 +9,11 @@ import {
   SettingsGroupCard,
   SettingsRow,
 } from "@/modules/ui/components";
+import {
+  numberToDraft,
+  parseIntegerDraft,
+  sanitizeIntegerDraft,
+} from "@/modules/settings/annual-leave-number-draft";
 import type { AnnualLeaveSettingsPageData } from "@/modules/settings/settings-page-data";
 
 interface AnnualLeaveSettingsSectionProps {
@@ -23,10 +28,10 @@ function NumberField({
   onChange,
 }: {
   label: string;
-  value: number;
+  value: string;
   min: number;
   max: number;
-  onChange: (value: number) => void;
+  onChange: (value: string) => void;
 }) {
   return (
     <label className="block">
@@ -37,7 +42,7 @@ function NumberField({
         min={min}
         max={max}
         value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
+        onChange={(event) => onChange(sanitizeIntegerDraft(event.target.value))}
         className="mt-1 h-12 w-full rounded-[12px] bg-[#f2f2f7] px-4 text-[16px] font-semibold text-[#1a1a1a] outline-none focus:ring-2 focus:ring-[#007AFF]"
       />
     </label>
@@ -51,21 +56,35 @@ export function AnnualLeaveSettingsSection({
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [year, setYear] = useState(initialData.year);
-  const [totalDays, setTotalDays] = useState(initialData.totalDays);
-  const [remainingDays, setRemainingDays] = useState(initialData.remainingDays);
-  const [remainingHours, setRemainingHours] = useState(initialData.remainingHours);
+  const [year, setYear] = useState(numberToDraft(initialData.year));
+  const [totalDays, setTotalDays] = useState(numberToDraft(initialData.totalDays));
+  const [remainingDays, setRemainingDays] = useState(numberToDraft(initialData.remainingDays));
+  const [remainingHours, setRemainingHours] = useState(numberToDraft(initialData.remainingHours));
 
   const openEditor = () => {
-    setYear(saved.year);
-    setTotalDays(saved.totalDays);
-    setRemainingDays(saved.remainingDays);
-    setRemainingHours(saved.remainingHours);
+    setYear(numberToDraft(saved.year));
+    setTotalDays(numberToDraft(saved.totalDays));
+    setRemainingDays(numberToDraft(saved.remainingDays));
+    setRemainingHours(numberToDraft(saved.remainingHours));
     setError(null);
     setOpen(true);
   };
 
   const save = async () => {
+    const parsedYear = parseIntegerDraft(year);
+    const parsedTotalDays = parseIntegerDraft(totalDays);
+    const parsedRemainingDays = parseIntegerDraft(remainingDays);
+    const parsedRemainingHours = parseIntegerDraft(remainingHours);
+    if (
+      parsedYear === null ||
+      parsedTotalDays === null ||
+      parsedRemainingDays === null ||
+      parsedRemainingHours === null
+    ) {
+      setError("연차 설정 값을 입력해주세요.");
+      return;
+    }
+
     setSaving(true);
     setError(null);
     try {
@@ -73,7 +92,12 @@ export function AnnualLeaveSettingsSection({
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ year, totalDays, remainingDays, remainingHours }),
+        body: JSON.stringify({
+          year: parsedYear,
+          totalDays: parsedTotalDays,
+          remainingDays: parsedRemainingDays,
+          remainingHours: parsedRemainingHours,
+        }),
       });
       const body = (await response.json().catch(() => ({}))) as {
         error?: string;
@@ -86,7 +110,7 @@ export function AnnualLeaveSettingsSection({
 
       const remainingTotalHours = body.settings.totalHours - body.settings.usedHoursBeforeApp;
       const nextSaved = {
-        year,
+        year: parsedYear,
         totalDays: Math.floor(body.settings.totalHours / 8),
         remainingDays: Math.floor(Math.max(0, remainingTotalHours) / 8),
         remainingHours: Math.max(0, remainingTotalHours) % 8,

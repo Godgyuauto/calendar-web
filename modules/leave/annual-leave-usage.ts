@@ -1,6 +1,7 @@
 import { parseStructuredOverrideNote } from "@/modules/family/domain/structured-override-note";
 import type { ShiftOverride } from "@/modules/shift";
 import { ANNUAL_LEAVE_HOURS_PER_DAY, type AnnualLeaveUsage } from "./annual-leave";
+import { isKoreanPublicHoliday } from "./korean-public-holidays";
 
 function toTimestamp(value: string | null | undefined): number | null {
   if (!value) {
@@ -32,6 +33,10 @@ export function getAnnualLeaveUsageFromOverride(
   const eventType = note?.event_type ?? override.overrideType;
   if (eventType !== "vacation") {
     return null;
+  }
+
+  if (isKoreanPublicHoliday(override.date) || note?.leave_exempt_from_deduction) {
+    return { hours: 0 };
   }
 
   if (note?.leave_deduction_hours) {

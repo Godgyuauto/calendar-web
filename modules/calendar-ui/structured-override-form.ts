@@ -5,6 +5,7 @@ import {
 } from "@/modules/calendar-ui/structured-override-note";
 import { getEventTypeOption } from "@/modules/calendar-ui/structured-override-options";
 import { normalizeLeaveDeduction } from "@/modules/leave/annual-leave-deduction";
+import { isKoreanPublicHoliday } from "@/modules/leave/korean-public-holidays";
 import {
   toDateTimeFromDateAndTime,
   toDateInputOrDefault,
@@ -66,6 +67,9 @@ export function toOverrideSubmitPayload(
     form.eventType === "vacation"
       ? normalizeLeaveDeduction(form.leaveDeductionHours ?? 8)
       : null;
+  const leaveExempt =
+    form.eventType === "vacation" &&
+    (isKoreanPublicHoliday(form.startDate) || (form.leaveExemptFromDeduction ?? false));
   const notePayload: StructuredOverrideNoteV1 = {
     schema: "calendar_override_v1",
     event_type: form.eventType,
@@ -78,7 +82,7 @@ export function toOverrideSubmitPayload(
     memo,
     leave_deduction_hours: leaveDeduction?.hours,
     leave_deduction_label: leaveDeduction?.label,
-    leave_exempt_from_deduction: form.leaveExemptFromDeduction ?? false,
+    leave_exempt_from_deduction: leaveExempt,
   };
 
   return {

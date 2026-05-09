@@ -70,6 +70,49 @@ describe("getAnnualLeaveUsagesFromOverrides", () => {
     expect(usages).toEqual([{ hours: 4 }]);
   });
 
+  it("does not deduct annual leave on Korean public holidays", () => {
+    const usages = getAnnualLeaveUsagesFromOverrides(
+      [
+        override({
+          date: "2026-05-05",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: true,
+            leave_deduction_hours: 8,
+            leave_deduction_label: "연차",
+          }),
+        }),
+      ],
+      2026,
+    );
+
+    expect(usages).toEqual([{ hours: 0 }]);
+  });
+
+  it("does not deduct annual leave when marked as a company holiday", () => {
+    const usages = getAnnualLeaveUsagesFromOverrides(
+      [
+        override({
+          date: "2026-05-08",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: true,
+            leave_deduction_hours: 8,
+            leave_deduction_label: "연차",
+            leave_exempt_from_deduction: true,
+          }),
+        }),
+      ],
+      2026,
+    );
+
+    expect(usages).toEqual([{ hours: 0 }]);
+  });
+
   it("ignores non-vacation overrides and other years", () => {
     const usages = getAnnualLeaveUsagesFromOverrides(
       [

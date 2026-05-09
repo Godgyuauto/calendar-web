@@ -1,0 +1,31 @@
+const KOREAN_PUBLIC_HOLIDAYS_BY_YEAR: Record<number, Set<string>> = {
+  2026: new Set([
+    "2026-01-01",
+    "2026-02-16",
+    "2026-02-17",
+    "2026-02-18",
+    "2026-03-01",
+    "2026-03-02",
+    "2026-05-01",
+    "2026-05-05",
+    "2026-05-24",
+    "2026-05-25",
+    "2026-06-03",
+    "2026-06-06",
+    "2026-07-17",
+    "2026-08-15",
+    "2026-08-17",
+    "2026-09-24",
+    "2026-09-25",
+    "2026-09-26",
+    "2026-10-03",
+    "2026-10-05",
+    "2026-10-09",
+    "2026-12-25",
+  ]),
+};
+
+export function isKoreanPublicHoliday(dateKey: string): boolean {
+  const year = Number(dateKey.slice(0, 4));
+  return KOREAN_PUBLIC_HOLIDAYS_BY_YEAR[year]?.has(dateKey) ?? false;
+}

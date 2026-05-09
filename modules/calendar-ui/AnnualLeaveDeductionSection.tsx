@@ -3,6 +3,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { StructuredOverrideFormState } from "@/modules/calendar-ui/structured-override";
 import { normalizeLeaveDeduction } from "@/modules/leave/annual-leave-deduction";
+import { isKoreanPublicHoliday } from "@/modules/leave/korean-public-holidays";
 import { Chip, SectionLabel } from "@/modules/ui/components";
 
 interface AnnualLeaveDeductionSectionProps {
@@ -26,6 +27,8 @@ export function AnnualLeaveDeductionSection({
   setForm,
 }: AnnualLeaveDeductionSectionProps) {
   const hours = form.leaveDeductionHours ?? 8;
+  const publicHoliday = isKoreanPublicHoliday(form.startDate);
+  const exempt = publicHoliday || (form.leaveExemptFromDeduction ?? false);
 
   return (
     <>
@@ -51,6 +54,23 @@ export function AnnualLeaveDeductionSection({
           </Chip>
         ))}
       </div>
+      <label className="mt-2 flex items-center gap-2 rounded-[12px] bg-[#f2f2f7] px-3 py-2">
+        <input
+          type="checkbox"
+          checked={exempt}
+          disabled={publicHoliday}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              leaveExemptFromDeduction: event.target.checked,
+            }))
+          }
+          className="h-4 w-4 accent-[#007AFF]"
+        />
+        <span className="text-[12px] font-semibold text-[#6e6e73]">
+          {publicHoliday ? "공휴일이라 차감 없음" : "회사 휴일로 차감 없음"}
+        </span>
+      </label>
     </>
   );
 }

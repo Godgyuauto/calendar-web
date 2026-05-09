@@ -117,6 +117,54 @@ describe("structured override form mapping", () => {
     expect(note.leave_deduction_label).toBe("연차");
   });
 
+  it("uses the earliest same-day vacation as the default annual leave deduction", () => {
+    const form = toStructuredOverrideFormState({
+      dateKey: "2026-05-09",
+      sameDayOverrides: [
+        {
+          date: "2026-05-09",
+          overrideType: "vacation",
+          overrideShift: "OFF",
+          label: "저녁 일정",
+          startTime: "2026-05-09T18:00:00+09:00",
+          endTime: "2026-05-09T22:00:00+09:00",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: false,
+            start_at: "2026-05-09T18:00",
+            end_at: "2026-05-09T22:00",
+            leave_deduction_hours: 4,
+            leave_deduction_label: "반차",
+          }),
+        },
+        {
+          date: "2026-05-09",
+          overrideType: "vacation",
+          overrideShift: "OFF",
+          label: "오전 일정",
+          startTime: "2026-05-09T09:00:00+09:00",
+          endTime: "2026-05-09T17:00:00+09:00",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            all_day: false,
+            start_at: "2026-05-09T09:00",
+            end_at: "2026-05-09T17:00",
+            leave_deduction_hours: 2,
+            leave_deduction_label: "시간 연차",
+          }),
+        },
+      ],
+    });
+
+    expect(form.eventType).toBe("custom");
+    expect(form.leaveDeductionHours).toBe(2);
+    expect(form.leaveDeductionLabel).toBe("시간 연차");
+  });
+
   it("normalizes four hourly leave hours to half-day leave", () => {
     const payload = toOverrideSubmitPayload("2026-05-09", {
       eventType: "vacation",

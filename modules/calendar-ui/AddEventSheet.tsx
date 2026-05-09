@@ -62,8 +62,11 @@ export function AddEventSheet({
   const formSeed = toStructuredOverrideFormState({
     dateKey: defaultDate,
     override: formOverride ?? undefined,
+    sameDayOverrides: formOverride ? undefined : existingOverrides,
   });
-  const formSeedKey = `${defaultDate}:${formOverride?.id ?? "new"}`;
+  const createSeedKey =
+    existingOverrides.map((override) => override.id).join(",") || "new";
+  const formSeedKey = `${defaultDate}:${formOverride?.id ?? createSeedKey}`;
 
   const submit = async (form: StructuredOverrideFormState) => {
     if (saving || deleting) {

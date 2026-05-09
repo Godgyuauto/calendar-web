@@ -16,10 +16,59 @@ import type {
   OverrideSubmitPayload,
   StructuredOverrideFormState,
 } from "@/modules/calendar-ui/structured-override-types";
+import type { LeaveDeductionLabel } from "@/modules/leave/annual-leave-deduction";
+
+interface InheritedAnnualLeaveDeduction {
+  hours: number;
+  label: LeaveDeductionLabel;
+  exempt: boolean;
+}
+
+function toSortTimestamp(value?: string | null): number {
+  if (!value) {
+    return Number.POSITIVE_INFINITY;
+  }
+  const normalized = /(?:Z|[+-]\d{2}:\d{2})$/.test(value) ? value : `${value}+09:00`;
+  const timestamp = new Date(normalized).getTime();
+  return Number.isFinite(timestamp) ? timestamp : Number.POSITIVE_INFINITY;
+}
+
+function getInheritedAnnualLeaveDeduction(
+  dateKey: string,
+  overrides: OverrideRecordLike[] | undefined,
+): InheritedAnnualLeaveDeduction | null {
+  const vacationOverrides = (overrides ?? [])
+    .filter((candidate) => candidate.date === dateKey)
+    .map((candidate) => ({
+      override: candidate,
+      note: parseStructuredNote(candidate.note, {
+        eventType: candidate.overrideType,
+        shiftChange: candidate.overrideShift ?? "KEEP",
+      }),
+    }))
+    .filter(({ override, note }) => (note?.event_type ?? override.overrideType) === "vacation")
+    .sort((left, right) => {
+      const leftStart = toSortTimestamp(left.override.startTime ?? left.note?.start_at);
+      const rightStart = toSortTimestamp(right.override.startTime ?? right.note?.start_at);
+      return leftStart - rightStart;
+    });
+
+  const earliest = vacationOverrides[0];
+  if (!earliest) {
+    return null;
+  }
+
+  return {
+    hours: earliest.note?.leave_deduction_hours ?? 8,
+    label: earliest.note?.leave_deduction_label ?? "연차",
+    exempt: earliest.note?.leave_exempt_from_deduction ?? false,
+  };
+}
 
 export function toStructuredOverrideFormState(input: {
   dateKey: string;
   override?: OverrideRecordLike | null;
+  sameDayOverrides?: OverrideRecordLike[];
 }): StructuredOverrideFormState {
   const override = input.override;
   const note = parseStructuredNote(override?.note, {
@@ -34,6 +83,9 @@ export function toStructuredOverrideFormState(input: {
     : "";
   const startSource = note?.start_at ?? override?.startTime;
   const endSource = note?.end_at ?? override?.endTime;
+  const inheritedDeduction = override
+    ? null
+    : getInheritedAnnualLeaveDeduction(input.dateKey, input.sameDayOverrides);
 
   return {
     eventType,
@@ -45,9 +97,10 @@ export function toStructuredOverrideFormState(input: {
     remindAt: toDateTimeLocalOrNull(note?.remind_at) ?? "",
     title: note?.title ?? fallbackTitle,
     memo: note?.memo ?? "",
-    leaveDeductionHours: note?.leave_deduction_hours ?? 8,
-    leaveDeductionLabel: note?.leave_deduction_label ?? "연차",
-    leaveExemptFromDeduction: note?.leave_exempt_from_deduction ?? false,
+    leaveDeductionHours: note?.leave_deduction_hours ?? inheritedDeduction?.hours ?? 8,
+    leaveDeductionLabel: note?.leave_deduction_label ?? inheritedDeduction?.label ?? "연차",
+    leaveExemptFromDeduction:
+      note?.leave_exempt_from_deduction ?? inheritedDeduction?.exempt ?? false,
   };
 }
 

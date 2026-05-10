@@ -19,6 +19,7 @@ export interface ShiftPatternConfig {
 export interface ShiftOverride {
   id?: string;
   userId?: string;
+  createdBy?: string | null;
   date: string;
   overrideType: OverrideType;
   overrideShift: ShiftCode | null;

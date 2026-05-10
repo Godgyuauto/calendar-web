@@ -9,34 +9,14 @@ import {
 } from "../_common/family-supabase-common";
 import { isISODateKey } from "@/modules/family/domain/validators";
 import type { ShiftOverride } from "@/modules/shift";
-
-interface ShiftOverrideRow {
-  id: string;
-  user_id: string;
-  date: string;
-  override_type: ShiftOverride["overrideType"];
-  override_shift: ShiftOverride["overrideShift"];
-  label: string;
-  start_time: string | null;
-  end_time: string | null;
-  note: string | null;
-  created_at: string;
-}
-
-function toShiftOverride(row: ShiftOverrideRow): ShiftOverride {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    date: row.date,
-    overrideType: row.override_type,
-    overrideShift: row.override_shift,
-    label: row.label,
-    startTime: row.start_time,
-    endTime: row.end_time,
-    note: row.note,
-    createdAt: row.created_at,
-  };
-}
+import {
+  buildShiftOverrideInsertPayload,
+  buildShiftOverrideMutationQuery,
+  buildShiftOverrideUpdatePayload,
+  SHIFT_OVERRIDE_SELECT,
+  type ShiftOverrideRow,
+  toShiftOverride,
+} from "./family-overrides-supabase-payload";
 
 export async function listShiftOverridesFromSupabase(
   auth: FamilyAuthContext,
@@ -49,7 +29,7 @@ export async function listShiftOverridesFromSupabase(
   },
 ): Promise<ShiftOverride[]> {
   const query = new URLSearchParams({
-    select: "id,user_id,date,override_type,override_shift,label,start_time,end_time,note,created_at",
+    select: SHIFT_OVERRIDE_SELECT,
     family_id: `eq.${auth.familyId}`,
     order: "date.asc",
   });
@@ -95,17 +75,7 @@ export async function createShiftOverrideInSupabase(
   const response = await fetch(buildSupabaseUrl("/rest/v1/shift_overrides"), {
     method: "POST",
     headers: buildSupabaseHeaders(auth, "return=representation"),
-    body: JSON.stringify({
-      family_id: auth.familyId,
-      user_id: auth.userId,
-      date: input.date,
-      override_type: input.overrideType,
-      override_shift: input.overrideShift,
-      label: input.label.trim(),
-      start_time: input.startTime ?? null,
-      end_time: input.endTime ?? null,
-      note: input.note ?? null,
-    }),
+    body: JSON.stringify(buildShiftOverrideInsertPayload(auth, input)),
     cache: "no-store",
   });
   await assertSupabaseResponseOk(response, "Failed to create shift override.");
@@ -125,25 +95,14 @@ export async function updateShiftOverrideInSupabase(
     throw new FamilyRepositoryError("date must be in YYYY-MM-DD format.", 400);
   }
 
-  const query = new URLSearchParams({
-    id: `eq.${input.id}`,
-    family_id: `eq.${auth.familyId}`,
-    user_id: `eq.${auth.userId}`,
-    select: "id,user_id,date,override_type,override_shift,label,start_time,end_time,note,created_at",
+  const query = buildShiftOverrideMutationQuery(auth, input.id, {
+    select: SHIFT_OVERRIDE_SELECT,
   });
 
   const response = await fetch(buildSupabaseUrl(`/rest/v1/shift_overrides?${query.toString()}`), {
     method: "PATCH",
     headers: buildSupabaseHeaders(auth, "return=representation"),
-    body: JSON.stringify({
-      date: input.date,
-      override_type: input.overrideType,
-      override_shift: input.overrideShift,
-      label: input.label.trim(),
-      start_time: input.startTime ?? null,
-      end_time: input.endTime ?? null,
-      note: input.note ?? null,
-    }),
+    body: JSON.stringify(buildShiftOverrideUpdatePayload(input)),
     cache: "no-store",
   });
   await assertSupabaseResponseOk(response, "Failed to update shift override.");
@@ -159,10 +118,7 @@ export async function removeShiftOverrideInSupabase(
   auth: FamilyAuthContext,
   id: string,
 ): Promise<boolean> {
-  const query = new URLSearchParams({
-    id: `eq.${id}`,
-    family_id: `eq.${auth.familyId}`,
-    user_id: `eq.${auth.userId}`,
+  const query = buildShiftOverrideMutationQuery(auth, id, {
     select: "id",
   });
   const response = await fetch(buildSupabaseUrl(`/rest/v1/shift_overrides?${query.toString()}`), {

@@ -9,6 +9,10 @@ export interface AnnualLeaveUsageDetail extends AnnualLeaveUsage {
   exemptReason: "public_holiday" | "company_holiday" | null;
 }
 
+interface AnnualLeaveUsageOptions {
+  targetUserId?: string;
+}
+
 function toTimestamp(value: string | null | undefined): number | null {
   if (!value) {
     return null;
@@ -49,6 +53,7 @@ function compareOverridesByAnnualLeavePriority(
 
 function getAnnualLeaveUsageDetailFromOverride(
   override: ShiftOverride,
+  options?: AnnualLeaveUsageOptions,
 ): AnnualLeaveUsageDetail | null {
   const note = parseStructuredOverrideNote(override.note, {
     eventType: override.overrideType,
@@ -58,22 +63,36 @@ function getAnnualLeaveUsageDetailFromOverride(
   if (eventType !== "vacation") {
     return null;
   }
+  const target =
+    options?.targetUserId && note?.leave_targets.length
+      ? note.leave_targets.find((candidate) => candidate.user_id === options.targetUserId)
+      : null;
+  if (options?.targetUserId && note?.leave_targets.length && !target) {
+    return null;
+  }
+  if (options?.targetUserId && !note?.leave_targets.length && override.userId !== options.targetUserId) {
+    return null;
+  }
   const publicHoliday = isKoreanPublicHoliday(override.date);
+  const deductionHours = target?.deduction_hours ?? note?.leave_deduction_hours;
+  const deductionLabel = target?.deduction_label ?? note?.leave_deduction_label ?? "연차";
+  const exemptFromDeduction =
+    target?.exempt_from_deduction ?? note?.leave_exempt_from_deduction ?? false;
 
-  if (publicHoliday || note?.leave_exempt_from_deduction) {
+  if (publicHoliday || exemptFromDeduction) {
     return {
       date: override.date,
       hours: 0,
-      deductionLabel: note?.leave_deduction_label ?? "연차",
+      deductionLabel,
       exemptReason: publicHoliday ? "public_holiday" : "company_holiday",
     };
   }
 
-  if (note?.leave_deduction_hours) {
+  if (deductionHours) {
     return {
       date: override.date,
-      hours: Math.min(ANNUAL_LEAVE_HOURS_PER_DAY, note.leave_deduction_hours),
-      deductionLabel: note.leave_deduction_label ?? "연차",
+      hours: Math.min(ANNUAL_LEAVE_HOURS_PER_DAY, deductionHours),
+      deductionLabel,
       exemptReason: null,
     };
   }
@@ -101,16 +120,18 @@ function getAnnualLeaveUsageDetailFromOverride(
 
 export function getAnnualLeaveUsageFromOverride(
   override: ShiftOverride,
+  options?: AnnualLeaveUsageOptions,
 ): AnnualLeaveUsage | null {
-  const detail = getAnnualLeaveUsageDetailFromOverride(override);
+  const detail = getAnnualLeaveUsageDetailFromOverride(override, options);
   return detail ? { hours: detail.hours } : null;
 }
 
 export function getAnnualLeaveUsagesFromOverrides(
   overrides: ShiftOverride[],
   year: number,
+  options?: AnnualLeaveUsageOptions,
 ): AnnualLeaveUsage[] {
-  return getAnnualLeaveUsageDetailsFromOverrides(overrides, year).map((usage) => ({
+  return getAnnualLeaveUsageDetailsFromOverrides(overrides, year, options).map((usage) => ({
     hours: usage.hours,
   }));
 }
@@ -118,6 +139,7 @@ export function getAnnualLeaveUsagesFromOverrides(
 export function getAnnualLeaveUsageDetailsFromOverrides(
   overrides: ShiftOverride[],
   year: number,
+  options?: AnnualLeaveUsageOptions,
 ): AnnualLeaveUsageDetail[] {
   const detailsByDate = new Map<string, AnnualLeaveUsageDetail>();
   const sortedOverrides = overrides
@@ -129,7 +151,7 @@ export function getAnnualLeaveUsageDetailsFromOverrides(
     if (detailsByDate.has(override.date)) {
       continue;
     }
-    const detail = getAnnualLeaveUsageDetailFromOverride(override);
+    const detail = getAnnualLeaveUsageDetailFromOverride(override, options);
     if (detail) {
       detailsByDate.set(override.date, detail);
     }

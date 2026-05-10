@@ -1,26 +1,15 @@
-import type { OverrideType, ShiftCode } from "@/modules/shift";
-import type { LeaveDeductionLabel } from "@/modules/leave/annual-leave-deduction";
+import type { OverrideType } from "@/modules/shift";
+import { parseStructuredSubjectFields } from "./structured-override-note-subject";
+import type {
+  ShiftChange,
+  StructuredOverrideNoteV1,
+} from "./structured-override-note-types";
 import {
   readLeaveDeductionLabel,
   readNumber,
 } from "@/modules/family/domain/structured-override-note-leave";
 
-export type ShiftChange = ShiftCode | "KEEP";
-
-export interface StructuredOverrideNoteV1 {
-  schema: "calendar_override_v1";
-  event_type: OverrideType;
-  shift_change: ShiftChange;
-  all_day: boolean;
-  start_at: string | null;
-  end_at: string | null;
-  remind_at: string | null;
-  title: string;
-  memo: string;
-  leave_deduction_hours?: number | null;
-  leave_deduction_label?: LeaveDeductionLabel | null;
-  leave_exempt_from_deduction?: boolean;
-}
+export type { ShiftChange, StructuredOverrideNoteV1 };
 
 const OVERRIDE_TYPES: OverrideType[] = [
   "vacation",
@@ -134,6 +123,9 @@ function hasStructuredFields(source: Record<string, unknown>): boolean {
     "leaveDeductionLabel",
     "leave_exempt_from_deduction",
     "leaveExemptFromDeduction",
+    "subject_type",
+    "subject_user_id",
+    "leave_targets",
   ];
 
   return knownKeys.some((key) => key in source);
@@ -195,5 +187,6 @@ export function parseStructuredOverrideNote(
     leave_exempt_from_deduction:
       readBoolean(parsed, ["leave_exempt_from_deduction", "leaveExemptFromDeduction"]) ??
       false,
+    ...parseStructuredSubjectFields(parsed),
   };
 }

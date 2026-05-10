@@ -136,6 +136,9 @@ export function toOverrideSubmitPayload(
     leave_deduction_hours: leaveDeduction?.hours,
     leave_deduction_label: leaveDeduction?.label,
     leave_exempt_from_deduction: leaveExempt,
+    subject_type: "member",
+    subject_user_id: null,
+    leave_targets: [],
   };
 
   return {

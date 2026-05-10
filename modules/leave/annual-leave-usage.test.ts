@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { ShiftOverride } from "@/modules/shift";
-import { getAnnualLeaveUsagesFromOverrides } from "@/modules/leave/annual-leave-usage";
+import {
+  getAnnualLeaveUsageDetailsFromOverrides,
+  getAnnualLeaveUsagesFromOverrides,
+} from "@/modules/leave/annual-leave-usage";
 
 function override(input: Partial<ShiftOverride>): ShiftOverride {
   return {
@@ -188,5 +191,120 @@ describe("getAnnualLeaveUsagesFromOverrides", () => {
     );
 
     expect(usages).toEqual([]);
+  });
+
+  it("deducts shared annual leave only for the requested worker target", () => {
+    const details = getAnnualLeaveUsageDetailsFromOverrides(
+      [
+        override({
+          userId: "creator-user",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            subject_type: "shared",
+            leave_targets: [
+              {
+                user_id: "worker-1",
+                deduction_hours: 8,
+                deduction_label: "연차",
+                exempt_from_deduction: false,
+              },
+            ],
+          }),
+        }),
+      ],
+      2026,
+      { targetUserId: "worker-1" },
+    );
+
+    expect(details).toEqual([
+      {
+        date: "2026-05-04",
+        hours: 8,
+        deductionLabel: "연차",
+        exemptReason: null,
+      },
+    ]);
+  });
+
+  it("ignores annual leave targets for other workers", () => {
+    const usages = getAnnualLeaveUsagesFromOverrides(
+      [
+        override({
+          userId: "creator-user",
+          note: JSON.stringify({
+            schema: "calendar_override_v1",
+            event_type: "vacation",
+            shift_change: "OFF",
+            subject_type: "shared",
+            leave_targets: [
+              {
+                user_id: "worker-1",
+                deduction_hours: 8,
+                deduction_label: "연차",
+                exempt_from_deduction: false,
+              },
+            ],
+          }),
+        }),
+      ],
+      2026,
+      { targetUserId: "worker-2" },
+    );
+
+    expect(usages).toEqual([]);
+  });
+
+  it("deducts once per date independently for each worker target", () => {
+    const overrides = [
+      override({
+        id: "shared-late",
+        startTime: "2026-05-04T18:00:00+09:00",
+        note: JSON.stringify({
+          schema: "calendar_override_v1",
+          event_type: "vacation",
+          shift_change: "OFF",
+          subject_type: "shared",
+          leave_targets: [
+            {
+              user_id: "worker-1",
+              deduction_hours: 4,
+              deduction_label: "반차",
+              exempt_from_deduction: false,
+            },
+            {
+              user_id: "worker-2",
+              deduction_hours: 8,
+              deduction_label: "연차",
+              exempt_from_deduction: false,
+            },
+          ],
+        }),
+      }),
+      override({
+        id: "shared-early",
+        startTime: "2026-05-04T09:00:00+09:00",
+        note: JSON.stringify({
+          schema: "calendar_override_v1",
+          event_type: "vacation",
+          shift_change: "OFF",
+          subject_type: "shared",
+          leave_targets: [
+            {
+              user_id: "worker-1",
+              deduction_hours: 2,
+              deduction_label: "시간 연차",
+              exempt_from_deduction: false,
+            },
+          ],
+        }),
+      }),
+    ];
+
+    expect(getAnnualLeaveUsagesFromOverrides(overrides, 2026, { targetUserId: "worker-1" }))
+      .toEqual([{ hours: 2 }]);
+    expect(getAnnualLeaveUsagesFromOverrides(overrides, 2026, { targetUserId: "worker-2" }))
+      .toEqual([{ hours: 8 }]);
   });
 });

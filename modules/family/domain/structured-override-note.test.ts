@@ -55,6 +55,69 @@ describe("parseStructuredOverrideNote — canonical (snake_case) schema", () => 
   });
 });
 
+describe("parseStructuredOverrideNote — subject and leave targets", () => {
+  it("parses shared subject and worker-specific leave targets", () => {
+    const note = JSON.stringify({
+      schema: "calendar_override_v1",
+      event_type: "vacation",
+      shift_change: "OFF",
+      subject_type: "shared",
+      subject_user_id: null,
+      leave_targets: [
+        {
+          user_id: "worker-1",
+          deduction_hours: 8,
+          deduction_label: "연차",
+          exempt_from_deduction: false,
+        },
+        {
+          user_id: "worker-2",
+          deduction_hours: 4,
+          deduction_label: "반차",
+          exempt_from_deduction: true,
+        },
+      ],
+    });
+
+    const result = parseStructuredOverrideNote(note);
+
+    expect(result?.subject_type).toBe("shared");
+    expect(result?.subject_user_id).toBeNull();
+    expect(result?.leave_targets).toEqual([
+      {
+        user_id: "worker-1",
+        deduction_hours: 8,
+        deduction_label: "연차",
+        exempt_from_deduction: false,
+      },
+      {
+        user_id: "worker-2",
+        deduction_hours: 4,
+        deduction_label: "반차",
+        exempt_from_deduction: true,
+      },
+    ]);
+  });
+
+  it("normalizes invalid subject data to a member subject without targets", () => {
+    const note = JSON.stringify({
+      event_type: "vacation",
+      subject_type: "team",
+      subject_user_id: "  ",
+      leave_targets: [
+        { user_id: "", deduction_hours: 99, deduction_label: "bad" },
+        null,
+      ],
+    });
+
+    const result = parseStructuredOverrideNote(note);
+
+    expect(result?.subject_type).toBe("member");
+    expect(result?.subject_user_id).toBeNull();
+    expect(result?.leave_targets).toEqual([]);
+  });
+});
+
 describe("parseStructuredOverrideNote — legacy camelCase keys", () => {
   const legacy = JSON.stringify({
     eventType: "training",

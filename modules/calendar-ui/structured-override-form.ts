@@ -7,6 +7,10 @@ import { getEventTypeOption } from "@/modules/calendar-ui/structured-override-op
 import { normalizeLeaveDeduction } from "@/modules/leave/annual-leave-deduction";
 import { isKoreanPublicHoliday } from "@/modules/leave/korean-public-holidays";
 import {
+  normalizeLeaveTargets,
+  normalizeSubjectType,
+} from "@/modules/calendar-ui/structured-override-leave-targets";
+import {
   toDateTimeFromDateAndTime,
   toDateInputOrDefault,
   toTimeInputOrEmpty,
@@ -17,7 +21,6 @@ import type {
   StructuredOverrideFormState,
 } from "@/modules/calendar-ui/structured-override-types";
 import type { LeaveDeductionLabel } from "@/modules/leave/annual-leave-deduction";
-import type { OverrideSubjectType } from "@/modules/family/domain/structured-override-note-types";
 
 interface InheritedAnnualLeaveDeduction {
   hours: number;
@@ -110,11 +113,8 @@ export function toStructuredOverrideFormState(input: {
     leaveDeductionLabel: note?.leave_deduction_label ?? inheritedDeduction?.label ?? "연차",
     leaveExemptFromDeduction:
       note?.leave_exempt_from_deduction ?? inheritedDeduction?.exempt ?? false,
+    leaveTargets: note?.leave_targets ?? [],
   };
-}
-
-function normalizeSubjectType(value: OverrideSubjectType | undefined): OverrideSubjectType {
-  return value === "shared" ? "shared" : "member";
 }
 
 export function toOverrideSubmitPayload(
@@ -138,6 +138,11 @@ export function toOverrideSubmitPayload(
     (isKoreanPublicHoliday(form.startDate) || (form.leaveExemptFromDeduction ?? false));
   const subjectType = normalizeSubjectType(form.subjectType);
   const subjectUserId = subjectType === "member" ? form.subjectUserId ?? null : null;
+  const leaveTargets = normalizeLeaveTargets(form, {
+    subjectType,
+    subjectUserId,
+    leaveExempt,
+  });
   const notePayload: StructuredOverrideNoteV1 = {
     schema: "calendar_override_v1",
     event_type: form.eventType,
@@ -153,7 +158,7 @@ export function toOverrideSubmitPayload(
     leave_exempt_from_deduction: leaveExempt,
     subject_type: subjectType,
     subject_user_id: subjectUserId,
-    leave_targets: [],
+    leave_targets: leaveTargets,
   };
 
   return {

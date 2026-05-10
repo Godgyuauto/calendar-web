@@ -1,6 +1,9 @@
 import type { OverrideType, ShiftCode } from "@/modules/shift";
 import type { LeaveDeductionLabel } from "@/modules/leave/annual-leave-deduction";
-import type { OverrideSubjectType } from "@/modules/family/domain/structured-override-note-types";
+import type {
+  OverrideSubjectType,
+  StructuredLeaveTarget,
+} from "@/modules/family/domain/structured-override-note-types";
 
 export interface OverrideRecordLike {
   date: string;
@@ -35,6 +38,7 @@ export interface StructuredOverrideFormState {
   leaveDeductionHours?: number;
   leaveDeductionLabel?: LeaveDeductionLabel;
   leaveExemptFromDeduction?: boolean;
+  leaveTargets?: StructuredLeaveTarget[];
 }
 
 export interface OverrideSubmitPayload {

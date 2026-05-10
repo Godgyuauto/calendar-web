@@ -15,5 +15,6 @@ export async function readAnnualLeaveMetadataForHome(
     }
   }
 
-  return readAccessTokenClaims(accessToken)?.userMetadata ?? {};
+  const claims = readAccessTokenClaims(accessToken);
+  return claims?.userId === userId ? claims.userMetadata ?? {} : {};
 }

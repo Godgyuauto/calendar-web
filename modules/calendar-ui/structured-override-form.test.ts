@@ -151,6 +151,8 @@ describe("structured override form mapping", () => {
     const payload = toOverrideSubmitPayload("2026-05-09", {
       eventType: "vacation",
       shiftChange: "OFF",
+      subjectType: "member",
+      subjectUserId: "member-1",
       startDate: "2026-05-09",
       endDate: "2026-05-09",
       startAt: "",
@@ -165,10 +167,60 @@ describe("structured override form mapping", () => {
     const note = JSON.parse(payload.note) as {
       leave_deduction_hours: number;
       leave_deduction_label: string;
+      leave_targets: unknown[];
     };
 
     expect(note.leave_deduction_hours).toBe(8);
     expect(note.leave_deduction_label).toBe("연차");
+    expect(note.leave_targets).toEqual([
+      {
+        user_id: "member-1",
+        deduction_hours: 8,
+        deduction_label: "연차",
+        exempt_from_deduction: false,
+      },
+    ]);
+  });
+
+  it("stores shared vacation leave targets per selected worker", () => {
+    const payload = toOverrideSubmitPayload("2026-05-09", {
+      eventType: "vacation",
+      shiftChange: "OFF",
+      subjectType: "shared",
+      subjectUserId: null,
+      startDate: "2026-05-09",
+      endDate: "2026-05-09",
+      startAt: "",
+      endAt: "",
+      remindAt: "",
+      title: "가족 휴가",
+      memo: "",
+      leaveTargets: [
+        {
+          user_id: "worker-1",
+          deduction_hours: 4,
+          deduction_label: "반차",
+          exempt_from_deduction: false,
+        },
+      ],
+    });
+    const note = JSON.parse(payload.note) as {
+      subject_type: string;
+      subject_user_id: string | null;
+      leave_targets: unknown[];
+    };
+
+    expect(payload.userId).toBeUndefined();
+    expect(note.subject_type).toBe("shared");
+    expect(note.subject_user_id).toBeNull();
+    expect(note.leave_targets).toEqual([
+      {
+        user_id: "worker-1",
+        deduction_hours: 4,
+        deduction_label: "반차",
+        exempt_from_deduction: false,
+      },
+    ]);
   });
 
   it("uses the earliest same-day vacation as the default annual leave deduction", () => {

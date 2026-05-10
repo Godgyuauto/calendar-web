@@ -40,6 +40,7 @@ export function buildAnnualLeaveHomeData(
   metadata: Record<string, unknown>,
   overrides: ShiftOverride[],
   fallbackYear: number,
+  targetUserId?: string,
 ): AnnualLeaveHomeData | null {
   const settings = parseAnnualLeaveSettings(metadata, fallbackYear);
   if (settings.totalHours <= 0) {
@@ -49,10 +50,13 @@ export function buildAnnualLeaveHomeData(
   const trackedOverrides = overrides.filter(
     (override) => override.date >= settings.trackingStartDate,
   );
-  const appUsages = getAnnualLeaveUsagesFromOverrides(trackedOverrides, settings.year);
+  const appUsages = getAnnualLeaveUsagesFromOverrides(trackedOverrides, settings.year, {
+    targetUserId,
+  });
   const history = getAnnualLeaveUsageDetailsFromOverrides(
     trackedOverrides,
     settings.year,
+    { targetUserId },
   )
     .slice()
     .sort((first, second) => first.date.localeCompare(second.date))

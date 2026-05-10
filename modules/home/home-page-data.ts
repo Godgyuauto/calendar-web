@@ -1,4 +1,4 @@
-import { CalendarCell, buildMonthCalendarGrid } from "@/modules/calendar";
+import { buildMonthCalendarGrid } from "@/modules/calendar";
 import type { FamilyEvent } from "@/modules/family";
 import {
   getApiAuthFailure,
@@ -6,21 +6,18 @@ import {
 } from "@/modules/family/api/_common";
 import { readAuthProfileFromSupabase } from "@/modules/family/api/settings";
 import { listFamilyEventsFromSupabase } from "@/modules/family/api/events";
+import { listFamilyMembersFromSupabase } from "@/modules/family/api/members";
 import { listShiftOverridesFromSupabase } from "@/modules/family/api/overrides";
 import { getFamilyRepositoryFailure } from "@/modules/family/api/_common";
 import { buildFamilyCalendarRealtimeTopic } from "@/modules/family/api/_common/family-realtime-topic";
 import {
   DEFAULT_SHIFT_PATTERN_V1,
-  DayShiftSummary,
   type ShiftOverride,
   getMonthShiftSummary,
   getTodayShiftSummary,
 } from "@/modules/shift";
 import { getServerAccessTokenFromCookies } from "@/modules/home/access-token";
-import {
-  buildAnnualLeaveHomeData,
-  type AnnualLeaveHomeData,
-} from "@/modules/home/home-annual-leave";
+import { buildAnnualLeaveHomeData } from "@/modules/home/home-annual-leave";
 import { readAnnualLeaveMetadataForHome } from "@/modules/home/home-annual-leave-metadata";
 import { toMonthRangeInSeoul, toYearDateRange } from "@/modules/home/home-date-range";
 import { readHomeFamilyCache, writeHomeFamilyCache } from "@/modules/home/home-family-cache";
@@ -30,31 +27,10 @@ import {
   getUpcomingWindow,
   type UpcomingScheduleItem,
 } from "@/modules/home/upcoming-schedule";
+import type { FamilyReadModel, HomePageData } from "@/modules/home/home-page-types";
 import { getSeoulMonth, getSeoulYear, toSeoulDateKey } from "@/modules/home/utils/date";
 
-export interface HomePageData {
-  displayName: string;
-  currentYear: number;
-  currentMonth: number;
-  todayKey: string;
-  monthRows: DayShiftSummary[];
-  todaySummary: DayShiftSummary;
-  monthOverrides: ShiftOverride[];
-  routineEvents: FamilyEvent[];
-  upcomingEvents: UpcomingScheduleItem[];
-  calendarCells: CalendarCell[];
-  realtimeTopic: string | null;
-  annualLeave: AnnualLeaveHomeData | null;
-}
-
-interface FamilyReadModel {
-  displayName: string;
-  overrides: ShiftOverride[];
-  routineEvents: FamilyEvent[];
-  upcomingEvents: UpcomingScheduleItem[];
-  realtimeTopic: string | null;
-  annualLeave: AnnualLeaveHomeData | null;
-}
+export type { HomePageData } from "@/modules/home/home-page-types";
 
 function emptyFamilyReadModel(): FamilyReadModel {
   return {
@@ -100,7 +76,7 @@ async function readFamilyModelFromSupabase(
   let routineEvents: FamilyEvent[];
   let upcomingEvents: UpcomingScheduleItem[];
   let overrides: ShiftOverride[];
-  let annualLeave: AnnualLeaveHomeData | null;
+  let annualLeave: FamilyReadModel["annualLeave"];
   const realtimeTopic = buildFamilyCalendarRealtimeTopic(auth.familyId);
   const monthRange = toMonthRangeInSeoul(currentYear, currentMonth);
   const yearRange = toYearDateRange(currentYear);
@@ -108,25 +84,33 @@ async function readFamilyModelFromSupabase(
   const monthEndMs = new Date(monthRange.endExclusive).getTime();
   const upcomingWindow = getUpcomingWindow(toSeoulDateKey(now));
   try {
-    const [profile, monthEvents, monthOverrides, weekOverrides, yearMineOverrides, leaveMetadata] =
+    const [profile, members, monthEvents, monthOverrides, weekOverrides, yearOverrides] =
       await Promise.all([
-      readAuthProfileFromSupabase(auth),
-      listFamilyEventsFromSupabase(auth, {
-        startTimeGte: monthRange.startInclusive,
-        limit: 64,
-      }),
-      listShiftOverridesFromSupabase(auth, { year: currentYear, month: currentMonth }),
-      listShiftOverridesFromSupabase(auth, {
-        startDateGte: upcomingWindow.startDateKey,
-        startDateLt: upcomingWindow.endDateKey,
-      }),
-      listShiftOverridesFromSupabase(auth, {
-        startDateGte: yearRange.startDateKey,
-        startDateLt: yearRange.endDateKey,
-        scope: "mine",
-      }),
-      readAnnualLeaveMetadataForHome(auth.userId, auth.accessToken),
-    ]);
+        readAuthProfileFromSupabase(auth),
+        listFamilyMembersFromSupabase(auth),
+        listFamilyEventsFromSupabase(auth, {
+          startTimeGte: monthRange.startInclusive,
+          limit: 64,
+        }),
+        listShiftOverridesFromSupabase(auth, { year: currentYear, month: currentMonth }),
+        listShiftOverridesFromSupabase(auth, {
+          startDateGte: upcomingWindow.startDateKey,
+          startDateLt: upcomingWindow.endDateKey,
+        }),
+        listShiftOverridesFromSupabase(auth, {
+          startDateGte: yearRange.startDateKey,
+          startDateLt: yearRange.endDateKey,
+        }),
+      ]);
+    const selfMember = members.find((member) => member.userId === auth.userId);
+    const leaveTargetUserId =
+      selfMember?.working !== false
+        ? auth.userId
+        : members.find((member) => member.working)?.userId ?? auth.userId;
+    const leaveMetadata = await readAnnualLeaveMetadataForHome(
+      leaveTargetUserId,
+      auth.accessToken,
+    );
     displayName = profile.displayName ?? "나";
     routineEvents = pickRoutineEventsInWindow(monthEvents, monthStartMs, monthEndMs);
     upcomingEvents = buildUpcomingScheduleItems({
@@ -135,7 +119,12 @@ async function readFamilyModelFromSupabase(
       window: upcomingWindow,
     });
     overrides = monthOverrides;
-    annualLeave = buildAnnualLeaveHomeData(leaveMetadata, yearMineOverrides, currentYear);
+    annualLeave = buildAnnualLeaveHomeData(
+      leaveMetadata,
+      yearOverrides,
+      currentYear,
+      leaveTargetUserId,
+    );
   } catch (error) {
     const failure = getFamilyRepositoryFailure(error);
     if (failure) {

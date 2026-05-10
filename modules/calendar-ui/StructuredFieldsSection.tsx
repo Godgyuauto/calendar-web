@@ -5,6 +5,7 @@ import { AnnualLeaveDeductionSection } from "@/modules/calendar-ui/AnnualLeaveDe
 import { ReminderSection } from "@/modules/calendar-ui/ReminderSection";
 import { SubjectSelectorSection } from "@/modules/calendar-ui/SubjectSelectorSection";
 import { TimeRangeSection } from "@/modules/calendar-ui/TimeRangeSection";
+import { WorkerLeaveTargetsSection } from "@/modules/calendar-ui/WorkerLeaveTargetsSection";
 import {
   OFF_REASON_OPTIONS,
   SHIFT_CHANGE_OPTIONS,
@@ -104,7 +105,13 @@ export function StructuredFieldsSection({
               </Chip>
             ))}
           </div>
-          {form.eventType === "vacation" ? (
+          {form.eventType === "vacation" && form.subjectType === "shared" ? (
+            <WorkerLeaveTargetsSection
+              form={form}
+              setForm={setForm}
+              members={subjectMembers}
+            />
+          ) : form.eventType === "vacation" ? (
             <AnnualLeaveDeductionSection form={form} setForm={setForm} />
           ) : null}
         </>

@@ -63,6 +63,8 @@ describe("buildDayAgendaItems", () => {
   it("uses structured note title and memo when present", () => {
     const items = buildDayAgendaItems("2026-05-04", [
       override({
+        userId: "member-1",
+        createdBy: "creator-1",
         label: "fallback",
         note: JSON.stringify({
           schema: "calendar_override_v1",
@@ -73,6 +75,9 @@ describe("buildDayAgendaItems", () => {
           end_at: "2026-05-04T15:00",
           title: "서윤이 소풍",
           memo: "세종 베어트리파크",
+          subject_type: "shared",
+          subject_user_id: null,
+          leave_targets: [],
         }),
       }),
     ]);
@@ -96,6 +101,9 @@ describe("buildDayAgendaItems", () => {
         memo: "세종 베어트리파크",
         remindAt: null,
         source: "override",
+        subjectType: "shared",
+        subjectUserId: null,
+        createdBy: "creator-1",
       },
     });
     expect("actionLabel" in items[0]).toBe(false);

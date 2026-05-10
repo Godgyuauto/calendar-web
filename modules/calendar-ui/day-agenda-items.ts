@@ -2,6 +2,8 @@ import {
   getEventTypeOption,
   toStructuredOverrideDisplay,
 } from "@/modules/calendar-ui/structured-override";
+import type { CalendarSubjectMember } from "@/modules/calendar-ui/calendar-subject-types";
+import { getScheduleSubjectColor } from "@/modules/calendar-ui/calendar-subject-visuals";
 import type { ScheduleDetailItem } from "@/modules/calendar-ui/schedule-detail-types";
 import type { ShiftOverride } from "@/modules/shift";
 
@@ -14,6 +16,7 @@ export interface DayAgendaItem {
   timeLabel: string;
   memo: string;
   sortKey: string;
+  subjectColor: string;
   detail: ScheduleDetailItem;
 }
 
@@ -82,6 +85,7 @@ export function formatDayAgendaTime(
 export function buildDayAgendaItems(
   dateKey: string,
   overrides: ShiftOverride[],
+  subjectMembers: CalendarSubjectMember[] = [],
 ): DayAgendaItem[] {
   return overrides
     .filter((override) => override.date === dateKey)
@@ -89,6 +93,11 @@ export function buildDayAgendaItems(
       const display = toStructuredOverrideDisplay(override);
       const typeOption = getEventTypeOption(display.eventType);
       const title = display.title.trim() || typeOption.label;
+      const subjectColor = getScheduleSubjectColor(
+        display.subjectType,
+        display.subjectUserId,
+        subjectMembers,
+      );
       const shiftLabel =
         display.shiftChange === "KEEP" ? "근무조 유지" : `근무조 ${display.shiftChange}`;
       const sourceId = override.id ?? `${override.date}:${index}`;
@@ -101,6 +110,7 @@ export function buildDayAgendaItems(
         timeLabel: formatDayAgendaTime(display.startAt, display.endAt, display.allDay),
         memo: display.memo.trim(),
         sortKey: display.allDay ? `${dateKey}T00:00` : display.startAt ?? `${dateKey}T00:00`,
+        subjectColor,
         detail: {
           id: `override:${sourceId}`,
           sourceId,
@@ -113,6 +123,10 @@ export function buildDayAgendaItems(
           shiftChange: display.shiftChange,
           memo: display.memo.trim(),
           remindAt: display.remindAt,
+          subjectType: display.subjectType,
+          subjectUserId: display.subjectUserId,
+          createdBy: override.createdBy ?? null,
+          subjectColor,
           source: "override" as const,
         },
       };

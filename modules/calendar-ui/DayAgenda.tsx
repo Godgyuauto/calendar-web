@@ -1,6 +1,7 @@
 "use client";
 
 import type { CalendarCell } from "@/modules/calendar";
+import type { CalendarSubjectMember } from "@/modules/calendar-ui/calendar-subject-types";
 import { buildDayAgendaItems } from "@/modules/calendar-ui/day-agenda-items";
 import type { ScheduleDetailItem } from "@/modules/calendar-ui/schedule-detail-types";
 import type { ShiftOverride } from "@/modules/shift";
@@ -12,6 +13,7 @@ interface DayAgendaProps {
   todayKey: string;
   calendarCells: CalendarCell[];
   overrides: ShiftOverride[];
+  subjectMembers?: CalendarSubjectMember[];
   onChangeDate: (dateKey: string) => void;
   onOpenDateSheet: (dateKey: string, overrideId?: string) => void;
   onOpenDetail: (event: ScheduleDetailItem) => void;
@@ -40,6 +42,7 @@ export function DayAgenda({
   todayKey,
   calendarCells,
   overrides,
+  subjectMembers = [],
   onChangeDate,
   onOpenDateSheet,
   onOpenDetail,
@@ -47,7 +50,7 @@ export function DayAgenda({
   const cell = calendarCells.find((candidate) => candidate.date === dateKey);
   const shift = cell?.shift;
   const palette = shift ? SHIFT_PALETTE[shift.finalShift] : undefined;
-  const items = buildDayAgendaItems(dateKey, overrides);
+  const items = buildDayAgendaItems(dateKey, overrides, subjectMembers);
   const hasShiftChange = Boolean(shift?.override && shift.baseShift !== shift.finalShift);
 
   return (
@@ -115,6 +118,7 @@ export function DayAgenda({
               key={item.id}
               onClick={() => onOpenDetail(item.detail)}
               className="w-full rounded-[13px] border border-[#e5e5ea] bg-white px-3.5 py-3 text-left active:bg-[#f7f8fb]"
+              style={{ borderLeftColor: item.subjectColor, borderLeftWidth: 4 }}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>

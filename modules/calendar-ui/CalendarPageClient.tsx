@@ -20,7 +20,6 @@ import { MonthGrid } from "@/modules/calendar-ui/MonthGrid";
 import { WeekAgenda } from "@/modules/calendar-ui/WeekAgenda";
 import { useCalendarScheduleDetail } from "@/modules/calendar-ui/use-calendar-schedule-detail";
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, SegmentControl } from "@/modules/ui/components";
-
 interface CalendarPageClientProps {
   monthLabel: string;
   activeYear: number;
@@ -33,7 +32,6 @@ interface CalendarPageClientProps {
   initialFocusedDateKey?: string;
   initialSelectedDateKey?: string;
 }
-
 export function CalendarPageClient({
   monthLabel,
   activeYear,
@@ -56,11 +54,12 @@ export function CalendarPageClient({
   const [focusedDate, setFocusedDate] = useState(
     initialFocusedDateKey ?? initialSelectedDateKey ?? todayKey,
   );
-  const { openDetail, detailSheets } = useCalendarScheduleDetail();
+  const subjectMembers = subjectContext?.members ?? [];
+  const selfUserId = subjectContext?.selfUserId ?? null;
+  const { openDetail, detailSheets } = useCalendarScheduleDetail(subjectMembers);
   const selectedDateFromQuery = initialSelectedDateKey;
   const sheetDate = selectedDate ?? todayKey;
   const sheetOpen = fabOpen || selectedDate !== null;
-
   const prevMonth = offsetMonth(activeYear, activeMonth, -1);
   const nextMonth = offsetMonth(activeYear, activeMonth, 1);
   const prevMonthHref = buildMonthHref(
@@ -75,7 +74,6 @@ export function CalendarPageClient({
     nextMonth.year,
     nextMonth.month,
   );
-
   const closeSheet = () => {
     setFabOpen(false);
     setSelectedDate(null);
@@ -83,7 +81,6 @@ export function CalendarPageClient({
     if (!selectedDateFromQuery) {
       return;
     }
-
     const params = new URLSearchParams(searchParams.toString());
     params.delete("add");
     const query = params.toString();
@@ -116,14 +113,11 @@ export function CalendarPageClient({
     setFocusedDate(dateKey);
     setSelectedDate(dateKey);
   };
+
   return (
     <>
       <div className="px-4 pb-3">
-        <SegmentControl<ViewMode>
-          value={view}
-          onChange={setView}
-          options={CALENDAR_VIEW_OPTIONS}
-        />
+        <SegmentControl<ViewMode> value={view} onChange={setView} options={CALENDAR_VIEW_OPTIONS} />
       </div>
 
       {view !== "day" ? (
@@ -144,6 +138,7 @@ export function CalendarPageClient({
           monthOverrides={monthOverrides}
           todayKey={todayKey}
           selectedDateKey={selectedDate ?? undefined}
+          subjectMembers={subjectMembers}
           onSelectDate={(dateKey) => {
             setFabOpen(false);
             setSelectedOverrideId(null);
@@ -157,6 +152,7 @@ export function CalendarPageClient({
           todayKey={todayKey}
           calendarCells={calendarCells}
           overrides={monthOverrides}
+          subjectMembers={subjectMembers}
           onChangeDate={changeFocusedDate}
           onOpenDateSheet={openDateSheet}
           onOpenDetail={openDetail}
@@ -167,6 +163,7 @@ export function CalendarPageClient({
           todayKey={todayKey}
           calendarCells={calendarCells}
           overrides={monthOverrides}
+          subjectMembers={subjectMembers}
           onChangeDate={changeFocusedWeek}
           onOpenDateSheet={openDateSheet}
           onOpenDetail={openDetail}
@@ -193,8 +190,8 @@ export function CalendarPageClient({
         defaultDate={sheetDate}
         initialTab={selectedDate ? "existing" : "create"}
         selectedOverrideId={selectedOverrideId}
-        subjectMembers={subjectContext?.members ?? []}
-        selfUserId={subjectContext?.selfUserId ?? null}
+        subjectMembers={subjectMembers}
+        selfUserId={selfUserId}
       />
       {detailSheets}
     </>

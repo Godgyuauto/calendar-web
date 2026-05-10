@@ -22,7 +22,7 @@ describe("buildMonthGridOverrideBadges", () => {
       ],
     });
 
-    expect(badges).toEqual({ label: "글램핑", additionalCount: 1 });
+    expect(badges).toMatchObject({ label: "글램핑", additionalCount: 1 });
   });
 
   it("does not count overrides from other dates", () => {
@@ -35,6 +35,33 @@ describe("buildMonthGridOverrideBadges", () => {
       ],
     });
 
-    expect(badges).toEqual({ label: "글램핑", additionalCount: 0 });
+    expect(badges).toMatchObject({ label: "글램핑", additionalCount: 0 });
+  });
+
+  it("uses subject member color for the badge", () => {
+    const badges = buildMonthGridOverrideBadges({
+      cellDate: "2026-05-04",
+      primaryOverride: override({
+        label: "윤정 일정",
+        userId: "yunjung",
+        note: JSON.stringify({
+          schema: "calendar_override_v1",
+          event_type: "custom",
+          shift_change: "KEEP",
+          all_day: true,
+          title: "윤정 일정",
+          memo: "",
+          subject_type: "member",
+          subject_user_id: "yunjung",
+          leave_targets: [],
+        }),
+      }),
+      monthOverrides: [override({ label: "윤정 일정", userId: "yunjung" })],
+      subjectMembers: [
+        { userId: "yunjung", name: "윤정", working: false, color: "#FF2D55", isSelf: false },
+      ],
+    });
+
+    expect(badges?.color).toBe("#FF2D55");
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import type { CalendarCell } from "@/modules/calendar";
+import type { CalendarSubjectMember } from "@/modules/calendar-ui/calendar-subject-types";
 import { buildMonthGridOverrideBadges } from "@/modules/calendar-ui/month-grid-overrides";
 import type { ShiftOverride } from "@/modules/shift";
 import { SHIFT_PALETTE } from "@/modules/ui/tokens";
@@ -10,6 +11,7 @@ interface MonthGridProps {
   monthOverrides: ShiftOverride[];
   todayKey: string;
   selectedDateKey?: string;
+  subjectMembers?: CalendarSubjectMember[];
   onSelectDate: (dateKey: string) => void;
 }
 
@@ -30,6 +32,7 @@ export function MonthGrid({
   monthOverrides,
   todayKey,
   selectedDateKey,
+  subjectMembers = [],
   onSelectDate,
 }: MonthGridProps) {
   return (
@@ -56,6 +59,7 @@ export function MonthGrid({
                 cellDate: cell.date,
                 primaryOverride: shift?.override,
                 monthOverrides,
+                subjectMembers,
               })
             : null;
           const hasOverrideEvent = cell.isCurrentMonth && Boolean(shift?.override);
@@ -104,7 +108,10 @@ export function MonthGrid({
               ) : null}
               {overrideBadges?.label ? (
                 <span className="flex max-w-full items-center gap-1">
-                  <span className="min-w-0 truncate rounded-[6px] bg-[#fff4e5] px-1.5 py-0.5 text-[9px] font-semibold text-[#b35a00]">
+                  <span
+                    className="min-w-0 truncate rounded-[6px] px-1.5 py-0.5 text-[9px] font-semibold text-white"
+                    style={{ backgroundColor: overrideBadges.color }}
+                  >
                     {overrideBadges.label}
                   </span>
                   {overrideBadges.additionalCount > 0 ? (

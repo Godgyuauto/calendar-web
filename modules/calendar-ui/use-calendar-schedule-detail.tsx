@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AddEventSheet } from "@/modules/calendar-ui/AddEventSheet";
 import { ScheduleDetailSheet } from "@/modules/calendar-ui/ScheduleDetailSheet";
+import type { CalendarSubjectMember } from "@/modules/calendar-ui/calendar-subject-types";
 import type { ScheduleDetailItem } from "@/modules/calendar-ui/schedule-detail-types";
 
-export function useCalendarScheduleDetail() {
+export function useCalendarScheduleDetail(subjectMembers: CalendarSubjectMember[] = []) {
   const router = useRouter();
   const [selectedDetail, setSelectedDetail] = useState<ScheduleDetailItem | null>(null);
   const [editingDetail, setEditingDetail] = useState<ScheduleDetailItem | null>(null);
@@ -40,6 +41,7 @@ export function useCalendarScheduleDetail() {
     <>
       <ScheduleDetailSheet
         event={selectedDetail}
+        subjectMembers={subjectMembers}
         onClose={() => setSelectedDetail(null)}
         deletingId={deletingId}
         onEdit={(event) => {
@@ -61,6 +63,7 @@ export function useCalendarScheduleDetail() {
           initialTab="create"
           initialSubmitMode="update"
           selectedOverrideId={editingDetail.sourceId}
+          subjectMembers={subjectMembers}
         />
       ) : null}
     </>

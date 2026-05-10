@@ -1,9 +1,13 @@
 import { getMonthGridOverrideLabel } from "@/modules/calendar-ui/structured-override";
+import type { CalendarSubjectMember } from "@/modules/calendar-ui/calendar-subject-types";
+import { getScheduleSubjectColor } from "@/modules/calendar-ui/calendar-subject-visuals";
+import { toStructuredOverrideDisplay } from "@/modules/calendar-ui/structured-override";
 import type { ShiftOverride } from "@/modules/shift";
 
 export interface MonthGridOverrideBadges {
   label: string;
   additionalCount: number;
+  color: string;
 }
 
 function timestamp(value?: string): number {
@@ -19,6 +23,7 @@ export function buildMonthGridOverrideBadges(input: {
   cellDate: string;
   primaryOverride?: ShiftOverride;
   monthOverrides: ShiftOverride[];
+  subjectMembers?: CalendarSubjectMember[];
 }): MonthGridOverrideBadges | null {
   const dayOverrides = input.monthOverrides.filter(
     (override) => override.date === input.cellDate,
@@ -33,8 +38,14 @@ export function buildMonthGridOverrideBadges(input: {
     return null;
   }
 
+  const display = toStructuredOverrideDisplay(primaryOverride);
   return {
     label: getMonthGridOverrideLabel(primaryOverride),
     additionalCount: Math.max(dayOverrides.length - 1, 0),
+    color: getScheduleSubjectColor(
+      display.subjectType,
+      display.subjectUserId,
+      input.subjectMembers ?? [],
+    ),
   };
 }

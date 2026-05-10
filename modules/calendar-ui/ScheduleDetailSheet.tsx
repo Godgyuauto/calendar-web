@@ -1,12 +1,15 @@
 "use client";
 
 import { getEventTypeOption } from "@/modules/calendar-ui/structured-override";
+import type { CalendarSubjectMember } from "@/modules/calendar-ui/calendar-subject-types";
+import { getScheduleSubjectName } from "@/modules/calendar-ui/calendar-subject-visuals";
 import type { ScheduleDetailItem } from "@/modules/calendar-ui/schedule-detail-types";
 import { BottomSheet, CloseIcon } from "@/modules/ui/components";
 
 interface ScheduleDetailSheetProps {
   event: ScheduleDetailItem | null;
   deletingId?: string | null;
+  subjectMembers?: CalendarSubjectMember[];
   onClose: () => void;
   onEdit?: (event: ScheduleDetailItem) => void;
   onDelete?: (event: ScheduleDetailItem) => void;
@@ -61,6 +64,16 @@ function formatEventType(event: ScheduleDetailItem): string {
   return getEventTypeOption(event.eventType).label;
 }
 
+function formatMemberName(
+  members: CalendarSubjectMember[],
+  userId: string | null | undefined,
+): string | null {
+  if (!userId) {
+    return null;
+  }
+  return members.find((member) => member.userId === userId)?.name ?? null;
+}
+
 export function formatScheduleListTime(event: ScheduleDetailItem): string {
   return event.allDay ? toKoreanDateWithWeekday(event.startTime) : toKoreanDateTime(event.startTime);
 }
@@ -68,6 +81,7 @@ export function formatScheduleListTime(event: ScheduleDetailItem): string {
 export function ScheduleDetailSheet({
   event,
   deletingId = null,
+  subjectMembers = [],
   onClose,
   onEdit,
   onDelete,
@@ -98,6 +112,14 @@ export function ScheduleDetailSheet({
           <div className="space-y-2 rounded-[14px] bg-[#f7f7f9] px-4 py-3 text-[13px] text-[#1a1a1a]">
             <p><span className="font-semibold text-[#8e8e93]">시간 </span>{formatRange(event)}</p>
             <p><span className="font-semibold text-[#8e8e93]">근무 </span>{formatShift(event)}</p>
+            <p>
+              <span className="font-semibold text-[#8e8e93]">주체 </span>
+              {getScheduleSubjectName(event.subjectType, event.subjectUserId, subjectMembers)}
+            </p>
+            <p>
+              <span className="font-semibold text-[#8e8e93]">추가 </span>
+              {formatMemberName(subjectMembers, event.createdBy) ?? "알 수 없음"}
+            </p>
             <p><span className="font-semibold text-[#8e8e93]">메모 </span>{event.memo || "없음"}</p>
             <p>
               <span className="font-semibold text-[#8e8e93]">알림 </span>

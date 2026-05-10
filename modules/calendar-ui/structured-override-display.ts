@@ -23,7 +23,8 @@ export function toStructuredOverrideDisplay(
     remindAt: note?.remind_at ?? null,
     memo: note?.memo ?? "",
     subjectType: note?.subject_type ?? "member",
-    subjectUserId: note?.subject_user_id ?? override.userId ?? null,
+    subjectUserId:
+      note?.subject_type === "shared" ? null : note?.subject_user_id ?? override.userId ?? null,
   };
 }
 

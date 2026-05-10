@@ -1,4 +1,5 @@
 import type { CalendarCell } from "@/modules/calendar";
+import type { CalendarSubjectMember } from "@/modules/calendar-ui/calendar-subject-types";
 import { buildDayAgendaItems, type DayAgendaItem } from "./day-agenda-items";
 import type { ShiftOverride } from "@/modules/shift";
 
@@ -34,6 +35,7 @@ export function buildWeekAgendaDays(input: {
   todayKey: string;
   calendarCells: CalendarCell[];
   overrides: ShiftOverride[];
+  subjectMembers?: CalendarSubjectMember[];
 }): WeekAgendaDay[] {
   const cellByDate = new Map(input.calendarCells.map((cell) => [cell.date, cell]));
   return getWeekDateKeys(input.dateKey).map((dateKey, index) => {
@@ -44,7 +46,7 @@ export function buildWeekAgendaDays(input: {
       weekdayLabel: WEEKDAY_LABELS[index],
       isToday: dateKey === input.todayKey,
       shift: cell?.shift,
-      items: buildDayAgendaItems(dateKey, input.overrides),
+      items: buildDayAgendaItems(dateKey, input.overrides, input.subjectMembers ?? []),
     };
   });
 }

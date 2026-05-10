@@ -13,6 +13,7 @@ const ALLOWED_OVERRIDE_TYPES: OverrideType[] = [
 const ALLOWED_SHIFT_CODES: ShiftCode[] = ["A", "B", "C", "OFF"];
 
 export interface OverrideMutationBody {
+  userId?: string;
   date: string;
   overrideType: OverrideType;
   overrideShift: ShiftCode | null;
@@ -36,6 +37,7 @@ export function parseOverrideMutationBody(body: unknown): OverrideMutationBody {
   }
 
   return {
+    userId: typeof payload.userId === "string" ? payload.userId : undefined,
     date: String(payload.date ?? ""),
     overrideType,
     overrideShift,

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ExistingOverride } from "@/modules/calendar-ui/use-existing-override";
+import type { CalendarSubjectMember } from "@/modules/calendar-ui/calendar-subject-types";
 import {
   getEventTypeOption,
   toStructuredOverrideDisplay,
@@ -16,6 +17,7 @@ interface ExistingOverrideSectionProps {
   onEditExisting?: (override: ExistingOverride) => void;
   onDeleteExisting?: (override: ExistingOverride) => void;
   deletingExisting?: boolean;
+  subjectMembers?: CalendarSubjectMember[];
 }
 
 function formatDateTimeLabel(value: string | null): string {
@@ -42,6 +44,16 @@ function formatDateTimeLabel(value: string | null): string {
   }).format(parsed);
 }
 
+function getMemberName(
+  members: CalendarSubjectMember[],
+  userId: string | null | undefined,
+): string | null {
+  if (!userId) {
+    return null;
+  }
+  return members.find((member) => member.userId === userId)?.name ?? null;
+}
+
 export function ExistingOverrideSection({
   existingLoading,
   existingOverride,
@@ -51,6 +63,7 @@ export function ExistingOverrideSection({
   onEditExisting,
   onDeleteExisting,
   deletingExisting = false,
+  subjectMembers = [],
 }: ExistingOverrideSectionProps) {
   const dayOverrides =
     existingOverrides.length > 0 ? existingOverrides : existingOverride ? [existingOverride] : [];
@@ -65,6 +78,11 @@ export function ExistingOverrideSection({
           {dayOverrides.map((override) => {
             const display = toStructuredOverrideDisplay(override);
             const typeOption = getEventTypeOption(display.eventType);
+            const subjectLabel =
+              display.subjectType === "shared"
+                ? "우리"
+                : getMemberName(subjectMembers, display.subjectUserId) ?? "개인";
+            const creatorLabel = getMemberName(subjectMembers, override.createdBy);
             return (
               <div
                 key={override.id}
@@ -78,6 +96,10 @@ export function ExistingOverrideSection({
                     {typeOption.label}
                   </span>
                 </div>
+                <p className="mt-1 text-[12px] text-[#8e8e93]">
+                  주체: {subjectLabel}
+                  {creatorLabel ? ` · 추가: ${creatorLabel}` : ""}
+                </p>
                 <p className="mt-1 text-[12px] text-[#8e8e93]">
                   {display.shiftChange === "KEEP"
                     ? "근무조 유지"

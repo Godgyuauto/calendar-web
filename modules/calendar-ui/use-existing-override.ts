@@ -6,6 +6,8 @@ import type { OverrideType, ShiftCode } from "@/modules/shift";
 export interface ExistingOverride {
   id: string;
   date: string;
+  userId?: string;
+  createdBy?: string | null;
   overrideType: OverrideType;
   overrideShift: ShiftCode | null;
   label: string;
@@ -109,7 +111,7 @@ export function useExistingOverride({
       setExistingOverrides([]);
       try {
         const response = await fetch(
-          `/api/overrides?year=${year}&month=${month}&scope=mine`,
+          `/api/overrides?year=${year}&month=${month}`,
           {
           method: "GET",
           credentials: "include",

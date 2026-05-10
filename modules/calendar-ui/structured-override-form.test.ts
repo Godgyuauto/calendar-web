@@ -93,6 +93,60 @@ describe("structured override form mapping", () => {
     expect(note.memo).toBe("제조랑 회식");
   });
 
+  it("stores a member subject as structured metadata and target user", () => {
+    const payload = toOverrideSubmitPayload("2026-05-09", {
+      eventType: "custom",
+      shiftChange: "KEEP",
+      subjectType: "member",
+      subjectUserId: "member-1",
+      startDate: "2026-05-09",
+      endDate: "2026-05-09",
+      startAt: "",
+      endAt: "",
+      remindAt: "",
+      title: "개인 일정",
+      memo: "",
+    });
+    const note = JSON.parse(payload.note) as {
+      subject_type: string;
+      subject_user_id: string;
+    };
+
+    expect(payload.userId).toBe("member-1");
+    expect(note.subject_type).toBe("member");
+    expect(note.subject_user_id).toBe("member-1");
+  });
+
+  it("hydrates a shared subject from structured metadata", () => {
+    const form = toStructuredOverrideFormState({
+      dateKey: "2026-05-09",
+      override: {
+        date: "2026-05-09",
+        overrideType: "custom",
+        overrideShift: null,
+        label: "가족 일정",
+        userId: "member-1",
+        note: JSON.stringify({
+          schema: "calendar_override_v1",
+          event_type: "custom",
+          shift_change: "KEEP",
+          all_day: true,
+          start_at: null,
+          end_at: null,
+          remind_at: null,
+          title: "가족 일정",
+          memo: "",
+          subject_type: "shared",
+          subject_user_id: null,
+          leave_targets: [],
+        }),
+      },
+    });
+
+    expect(form.subjectType).toBe("shared");
+    expect(form.subjectUserId).toBeNull();
+  });
+
   it("stores default annual leave as eight deductible hours", () => {
     const payload = toOverrideSubmitPayload("2026-05-09", {
       eventType: "vacation",

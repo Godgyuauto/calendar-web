@@ -76,6 +76,7 @@ export async function handleOverrideCreate(
   try {
     const input = parseOverrideMutationBody(body);
     const created = await createShiftOverrideInSupabase(auth, {
+      userId: input.userId,
       date: input.date,
       overrideType: input.overrideType,
       overrideShift: input.overrideShift,
@@ -107,6 +108,7 @@ export async function handleOverrideUpdate(
     const input = parseOverrideMutationBody(body);
     const updated = await updateShiftOverrideInSupabase(auth, {
       id,
+      userId: input.userId,
       date: input.date,
       overrideType: input.overrideType,
       overrideShift: input.overrideShift,

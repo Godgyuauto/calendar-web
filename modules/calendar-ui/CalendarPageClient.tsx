@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ShiftOverride } from "@/modules/shift";
 import type { CalendarCell } from "@/modules/calendar";
 import { AddEventSheet } from "@/modules/calendar-ui/AddEventSheet";
+import type { CalendarSubjectContext } from "@/modules/calendar-ui/calendar-subject-types";
 import {
   buildDayHref,
   buildMonthHref,
@@ -27,6 +28,7 @@ interface CalendarPageClientProps {
   todayKey: string;
   calendarCells: CalendarCell[];
   monthOverrides: ShiftOverride[];
+  subjectContext: CalendarSubjectContext | null;
   initialView: ViewMode;
   initialFocusedDateKey?: string;
   initialSelectedDateKey?: string;
@@ -39,6 +41,7 @@ export function CalendarPageClient({
   todayKey,
   calendarCells,
   monthOverrides,
+  subjectContext,
   initialView,
   initialFocusedDateKey,
   initialSelectedDateKey,
@@ -190,6 +193,8 @@ export function CalendarPageClient({
         defaultDate={sheetDate}
         initialTab={selectedDate ? "existing" : "create"}
         selectedOverrideId={selectedOverrideId}
+        subjectMembers={subjectContext?.members ?? []}
+        selfUserId={subjectContext?.selfUserId ?? null}
       />
       {detailSheets}
     </>

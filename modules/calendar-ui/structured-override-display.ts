@@ -22,6 +22,8 @@ export function toStructuredOverrideDisplay(
     endAt: note?.end_at ?? toDateTimeLocalOrNull(override.endTime),
     remindAt: note?.remind_at ?? null,
     memo: note?.memo ?? "",
+    subjectType: note?.subject_type ?? "member",
+    subjectUserId: note?.subject_user_id ?? override.userId ?? null,
   };
 }
 

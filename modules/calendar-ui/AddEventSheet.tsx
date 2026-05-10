@@ -22,6 +22,7 @@ import {
   formatKoreanDate,
   getFormValidationError,
 } from "@/modules/calendar-ui/add-event-sheet-utils";
+import type { CalendarSubjectMember } from "@/modules/calendar-ui/calendar-subject-types";
 import {
   BottomSheet,
 } from "@/modules/ui/components";
@@ -34,6 +35,8 @@ interface AddEventSheetProps {
   initialTab: "existing" | "create";
   initialSubmitMode?: "create" | "update";
   selectedOverrideId?: string | null;
+  subjectMembers?: CalendarSubjectMember[];
+  selfUserId?: string | null;
 }
 
 export function AddEventSheet({
@@ -44,6 +47,8 @@ export function AddEventSheet({
   initialTab,
   initialSubmitMode = "create",
   selectedOverrideId,
+  subjectMembers = [],
+  selfUserId = null,
 }: AddEventSheetProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -63,6 +68,7 @@ export function AddEventSheet({
     dateKey: defaultDate,
     override: formOverride ?? undefined,
     sameDayOverrides: formOverride ? undefined : existingOverrides,
+    defaultSubjectUserId: selfUserId ?? subjectMembers[0]?.userId ?? null,
   });
   const createSeedKey =
     existingOverrides.map((override) => override.id).join(",") || "new";
@@ -167,6 +173,7 @@ export function AddEventSheet({
             }}
             onDeleteExisting={deleteExisting}
             deletingExisting={deleting}
+            subjectMembers={subjectMembers}
           />
         ) : (
           <AddEventSheetEditor
@@ -175,6 +182,7 @@ export function AddEventSheet({
             saving={saving}
             error={error}
             submitLabel={submitMode === "update" ? "수정 저장" : "저장"}
+            subjectMembers={subjectMembers}
             onSubmit={submit}
           />
         )}

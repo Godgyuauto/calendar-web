@@ -3,6 +3,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { AnnualLeaveDeductionSection } from "@/modules/calendar-ui/AnnualLeaveDeductionSection";
 import { ReminderSection } from "@/modules/calendar-ui/ReminderSection";
+import { SubjectSelectorSection } from "@/modules/calendar-ui/SubjectSelectorSection";
 import { TimeRangeSection } from "@/modules/calendar-ui/TimeRangeSection";
 import {
   OFF_REASON_OPTIONS,
@@ -15,10 +16,12 @@ import {
   TextField,
 } from "@/modules/ui/components";
 import type { OverrideType, ShiftCode } from "@/modules/shift";
+import type { CalendarSubjectMember } from "@/modules/calendar-ui/calendar-subject-types";
 
 interface StructuredFieldsSectionProps {
   form: StructuredOverrideFormState;
   setForm: Dispatch<SetStateAction<StructuredOverrideFormState>>;
+  subjectMembers?: CalendarSubjectMember[];
 }
 
 const OFF_REASON_IDS = new Set<OverrideType>(["vacation", "sick", "custom"]);
@@ -47,12 +50,18 @@ function eventTypeForShiftChange(
   return OFF_REASON_IDS.has(currentEventType) ? "swap" : currentEventType;
 }
 
-export function StructuredFieldsSection({ form, setForm }: StructuredFieldsSectionProps) {
+export function StructuredFieldsSection({
+  form,
+  setForm,
+  subjectMembers = [],
+}: StructuredFieldsSectionProps) {
   const isCustom = form.eventType === "custom";
   const isOffChange = form.shiftChange === "OFF";
 
   return (
     <>
+      <SubjectSelectorSection form={form} setForm={setForm} members={subjectMembers} />
+
       <SectionLabel className="px-0">근무조 변경</SectionLabel>
       <div className="flex gap-1.5">
         {SHIFT_CHANGE_OPTIONS.map((option) => (

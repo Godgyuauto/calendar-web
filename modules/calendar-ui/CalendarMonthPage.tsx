@@ -3,6 +3,7 @@ import { ensureAuthenticatedOrRedirect } from "@/modules/auth/server-session";
 import { normalizeDateKey, parseViewMode } from "@/modules/calendar-ui/calendar-url-state";
 import { CalendarPageClient } from "@/modules/calendar-ui/CalendarPageClient";
 import { CalendarRealtimeRefresh } from "@/modules/calendar-ui/CalendarRealtimeRefresh";
+import { readCalendarSubjectContext } from "@/modules/calendar-ui/calendar-subject-members";
 import { getHomePageData } from "@/modules/home/home-page-data";
 import { getSeoulMonth, getSeoulYear, toSeoulDateKey } from "@/modules/home/utils/date";
 import { BellIcon, CalendarIcon, NavBar, TabShell } from "@/modules/ui/components";
@@ -58,7 +59,10 @@ export default async function CalendarMonthPage({
   const selectedDateKey = normalizeDateKey(getQueryValue(resolvedSearchParams.add));
   const focusedDateKey = normalizeDateKey(getQueryValue(resolvedSearchParams.day));
   const initialView = parseViewMode(getQueryValue(resolvedSearchParams.view));
-  const data = await getHomePageData(monthDate);
+  const [data, subjectContext] = await Promise.all([
+    getHomePageData(monthDate),
+    readCalendarSubjectContext(),
+  ]);
   const todayKey = toSeoulDateKey(now);
 
   return (
@@ -92,6 +96,7 @@ export default async function CalendarMonthPage({
         todayKey={todayKey}
         calendarCells={data.calendarCells}
         monthOverrides={data.monthOverrides}
+        subjectContext={subjectContext}
         initialView={initialView}
         initialFocusedDateKey={focusedDateKey}
         initialSelectedDateKey={selectedDateKey}

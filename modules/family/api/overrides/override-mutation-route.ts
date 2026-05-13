@@ -16,6 +16,9 @@ import {
   dispatchQueuedNotificationCleanupForOverride,
   dispatchQueuedNotificationForOverride,
 } from "../notifications/notification-jobs-dispatch";
+import {
+  dispatchTelegramRegistrationForOverride,
+} from "../notifications/telegram-registration-dispatch";
 import { parseOverrideMutationBody } from "./override-route-payload";
 import { invalidateHomeFamilyCacheForFamily } from "@/modules/home/home-family-cache";
 import type { ShiftOverride } from "@/modules/shift";
@@ -31,6 +34,9 @@ async function applyOverrideMutationSideEffects(
     await dispatchQueuedNotificationCleanupForOverride(logScope, auth, override.id);
   }
   await dispatchQueuedNotificationForOverride(logScope, auth, override);
+  if (mode === "create") {
+    await dispatchTelegramRegistrationForOverride(logScope, auth, override);
+  }
   await dispatchFamilyPush(logScope, auth, {
     title: mode === "create" ? "근무 오버라이드 등록" : "근무 오버라이드 수정",
     body: `${override.date} · ${override.label}`,

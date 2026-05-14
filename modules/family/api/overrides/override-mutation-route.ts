@@ -17,8 +17,9 @@ import {
   dispatchQueuedNotificationForOverride,
 } from "../notifications/notification-jobs-dispatch";
 import {
-  dispatchTelegramRegistrationForOverride,
+  dispatchTelegramMutationForOverride,
 } from "../notifications/telegram-registration-dispatch";
+import { resolveTelegramOverrideLabels } from "../notifications/telegram-override-labels";
 import { parseOverrideMutationBody } from "./override-route-payload";
 import { invalidateHomeFamilyCacheForFamily } from "@/modules/home/home-family-cache";
 import type { ShiftOverride } from "@/modules/shift";
@@ -29,14 +30,21 @@ async function applyOverrideMutationSideEffects(
   override: ShiftOverride,
   mode: "create" | "update",
 ): Promise<void> {
+  const mutationLabels = await resolveTelegramOverrideLabels(auth, override, {
+    actorUserId: auth.userId,
+  });
+  const queuedReminderLabels = await resolveTelegramOverrideLabels(auth, override, {
+    actorUserId: override.createdBy ?? auth.userId,
+  });
   if (mode === "update" && override.id) {
     // Reschedule reminder after edit: clear stale jobs, then enqueue with latest note/remind_at.
     await dispatchQueuedNotificationCleanupForOverride(logScope, auth, override.id);
   }
-  await dispatchQueuedNotificationForOverride(logScope, auth, override);
-  if (mode === "create") {
-    await dispatchTelegramRegistrationForOverride(logScope, auth, override);
-  }
+  await dispatchQueuedNotificationForOverride(logScope, auth, override, queuedReminderLabels);
+  await dispatchTelegramMutationForOverride(logScope, auth, override, {
+    ...mutationLabels,
+    mode,
+  });
   await dispatchFamilyPush(logScope, auth, {
     title: mode === "create" ? "근무 오버라이드 등록" : "근무 오버라이드 수정",
     body: `${override.date} · ${override.label}`,

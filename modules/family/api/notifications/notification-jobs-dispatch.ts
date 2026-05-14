@@ -8,14 +8,16 @@ import {
   queueNotificationForOverride,
   removeQueuedNotificationsForOverride,
 } from "./notification-jobs-supabase";
+import type { TelegramOverrideLabels } from "./telegram-override-labels";
 
 export async function dispatchQueuedNotificationForOverride(
   scope: ApiLogScope,
   auth: FamilyAuthContext,
   createdOverride: ShiftOverride,
+  labels?: TelegramOverrideLabels,
 ): Promise<void> {
   try {
-    const queueResult = await queueNotificationForOverride(auth, createdOverride);
+    const queueResult = await queueNotificationForOverride(auth, createdOverride, labels);
     if (!queueResult.queued && queueResult.reason === "MISSING_ID") {
       logApiFailure(scope, {
         status: 202,

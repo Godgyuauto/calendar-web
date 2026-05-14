@@ -12,6 +12,8 @@ export interface StructuredOverrideNotificationBodyV1 {
   event_type_label: string;
   shift_change: ShiftChange;
   shift_change_label: string;
+  subject_label?: string;
+  actor_label?: string;
 }
 
 const EVENT_TYPE_LABELS: Record<OverrideType, string> = {
@@ -26,6 +28,10 @@ const EVENT_TYPE_LABELS: Record<OverrideType, string> = {
 
 export function buildStructuredOverrideNotificationBody(
   override: ShiftOverride,
+  labels?: {
+    subjectLabel?: string | null;
+    actorLabel?: string | null;
+  },
 ): StructuredOverrideNotificationBodyV1 {
   const structured = parseStructuredOverrideNote(override.note, {
     eventType: override.overrideType,
@@ -37,7 +43,7 @@ export function buildStructuredOverrideNotificationBody(
   const shiftChangeLabel = shiftChange === "KEEP" ? "유지" : shiftChange;
   const titleCandidate = structured?.title?.trim() ?? override.label.trim();
 
-  return {
+  const payload: StructuredOverrideNotificationBodyV1 = {
     schema: "override_notification_v1",
     date: override.date,
     title: titleCandidate.length > 0 ? titleCandidate : eventTypeLabel,
@@ -46,4 +52,14 @@ export function buildStructuredOverrideNotificationBody(
     shift_change: shiftChange,
     shift_change_label: shiftChangeLabel,
   };
+  const subjectLabel = labels?.subjectLabel?.trim();
+  const actorLabel = labels?.actorLabel?.trim();
+  if (subjectLabel) {
+    payload.subject_label = subjectLabel;
+  }
+  if (actorLabel) {
+    payload.actor_label = actorLabel;
+  }
+
+  return payload;
 }

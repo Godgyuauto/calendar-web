@@ -6,6 +6,7 @@ import {
   buildSupabaseUrl,
 } from "../_common/family-supabase-common";
 import { buildStructuredOverrideNotificationBody } from "../overrides/structured-override-notification";
+import type { TelegramOverrideLabels } from "./telegram-override-labels";
 
 interface OverrideNoteLike {
   remind_at?: unknown;
@@ -60,6 +61,7 @@ function buildQueueBody(payload: ReturnType<typeof buildStructuredOverrideNotifi
 export async function queueNotificationForOverride(
   auth: FamilyAuthContext,
   override: ShiftOverride,
+  labels?: TelegramOverrideLabels,
 ): Promise<QueueDispatchResult> {
   if (!override.id) {
     return { queued: false, reason: "MISSING_ID" };
@@ -70,7 +72,7 @@ export async function queueNotificationForOverride(
     return { queued: false, reason: "NO_REMINDER" };
   }
 
-  const bodyPayload = buildStructuredOverrideNotificationBody(override);
+  const bodyPayload = buildStructuredOverrideNotificationBody(override, labels);
   const dedupeKey = `override:${override.id}:${remindAt}`;
   const query = new URLSearchParams({ on_conflict: "family_id,dedupe_key" });
   const response = await fetch(buildSupabaseUrl(`/rest/v1/notification_jobs?${query.toString()}`), {

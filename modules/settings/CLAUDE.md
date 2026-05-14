@@ -1,6 +1,6 @@
 # modules/settings — 설정 탭
 
-프로필, 가족 정보, 근무 설정, 알림, 로그아웃.
+프로필, 근무 설정, 알림, 로그아웃.
 
 ## 구조
 
@@ -16,11 +16,11 @@
 - `working-toggle-controller.ts` — 근무자 여부 토글 제어 로직.
   - `/api/members` PATCH로 본인 `family_members.working` 저장
 - `SettingsPageClient.tsx` — client state/action 연결 + 섹션 조립.
-- `SettingsPageSections.tsx` — 프로필/가족/근무/알림/로그아웃 섹션 UI.
+- `SettingsPageSections.tsx` — 프로필/근무/알림/로그아웃 섹션 UI.
 
 ## 현재 동작 범위
 
-- **프로필/가족/기본값**: 실제 서버 read 표시.
+- **프로필/기본값**: 실제 서버 read 표시.
 - **근무자 여부 토글**: 활성화(실제 동작).
   - 토글 변경 시 `/api/members` PATCH로 본인 `working` 값을 저장.
   - 미근무(`working=false`)로 설정하면 멤버 화면 비교표에서 일정 계산이 제외됨.

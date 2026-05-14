@@ -19,10 +19,17 @@ export interface MembersPageData {
   isConnected: boolean;
   profileName: string;
   profileEmail: string;
+  canCreateInvite: boolean;
 }
 
 function createDisconnectedData(): MembersPageData {
-  return { members: [], isConnected: false, profileName: "나", profileEmail: "로그인 정보 없음" };
+  return {
+    members: [],
+    isConnected: false,
+    profileName: "나",
+    profileEmail: "로그인 정보 없음",
+    canCreateInvite: false,
+  };
 }
 
 function parseDateKey(dateKey: string): Date {
@@ -123,6 +130,7 @@ export async function getMembersPageData(now: Date = new Date()): Promise<Member
       isConnected: true,
       profileName: profile.displayName ?? "나",
       profileEmail: profile.email ?? "이메일 정보 없음",
+      canCreateInvite: members.find((member) => member.userId === auth.userId)?.role === "admin",
     };
     writeCachedMembersPageData(cacheKey, data, nowMs);
     return data;

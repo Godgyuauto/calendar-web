@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, type Dispatch, type SetStateAction } from "react";
-import { ClockTimeSelector } from "@/modules/calendar-ui/ClockTimeSelector";
+import type { Dispatch, SetStateAction } from "react";
+import { CompactDateTimeField } from "@/modules/calendar-ui/CompactDateTimeField";
 import type { StructuredOverrideFormState } from "@/modules/calendar-ui/structured-override";
 import {
   Chip,
-  SegmentControl,
   SectionLabel,
-  TextField,
 } from "@/modules/ui/components";
 
 interface TimeRangeSectionProps {
@@ -37,17 +35,8 @@ function getEndDateAfterStartDateChange(
   return current.endDate;
 }
 
-function formatDateTimeSummary(dateKey: string, hhmm: string): string {
-  const [hour = "00", minute = "00"] = hhmm.split(":");
-  const hourNumber = Number(hour);
-  const period = hourNumber >= 12 ? "오후" : "오전";
-  const hour12 = hourNumber % 12 || 12;
-  return `${dateKey.slice(5)} ${period} ${hour12}:${minute}`;
-}
-
 export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
   const hasTime = form.startAt.length > 0 || form.endAt.length > 0;
-  const [editingField, setEditingField] = useState<TimeField | null>(null);
 
   const updateDate = (field: TimeField, dateKey: string) => {
     setForm((current) => {
@@ -71,13 +60,6 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
     );
   };
 
-  const activeField = editingField ?? "start";
-  const activeDate = activeField === "start" ? form.startDate : form.endDate;
-  const activeTime =
-    activeField === "start"
-      ? form.startAt || "09:00"
-      : form.endAt || "18:00";
-
   return (
     <>
       <SectionLabel className="px-0">시간 (선택)</SectionLabel>
@@ -92,7 +74,6 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
                 startAt: "",
                 endAt: "",
               }));
-              setEditingField(null);
             }}
             variant="segment"
           >
@@ -106,7 +87,6 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
                 startAt: current.startAt || "09:00",
                 endAt: current.endAt || "18:00",
               }));
-              setEditingField(null);
             }}
             variant="segment"
           >
@@ -116,59 +96,22 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
 
         {hasTime ? (
           <div className="space-y-2">
-            {(["start", "end"] as const).map((field) => {
-              const label = field === "start" ? "시작" : "종료";
-              const dateKey = field === "start" ? form.startDate : form.endDate;
-              const time = field === "start" ? form.startAt || "09:00" : form.endAt || "18:00";
-              return (
-                <button
-                  key={field}
-                  type="button"
-                  onClick={() => setEditingField(field)}
-                  className="grid min-h-[50px] w-full grid-cols-[44px_minmax(0,1fr)] items-center gap-2 rounded-[10px] bg-[#f2f2f7] px-3 text-left"
-                >
-                  <span className="text-[12px] font-semibold text-[#8e8e93]">{label}</span>
-                  <span className="min-w-0 text-right text-[15px] font-semibold text-[#1a1a1a]">
-                    {formatDateTimeSummary(dateKey, time)}
-                  </span>
-                </button>
-              );
-            })}
-
-            {editingField ? (
-              <div className="rounded-[12px] border border-[#e5e5ea] bg-white p-3">
-                <SegmentControl
-                  options={[
-                    { value: "start", label: "시작" },
-                    { value: "end", label: "종료" },
-                  ]}
-                  value={editingField}
-                  onChange={setEditingField}
-                  className="mb-3"
-                />
-                <div className="mb-2 grid grid-cols-[44px_minmax(0,1fr)] items-center gap-2">
-                  <span className="text-[12px] font-semibold text-[#8e8e93]">날짜</span>
-                  <TextField
-                    type="date"
-                    value={activeDate}
-                    className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-                    onChange={(event) => updateDate(activeField, event.target.value)}
-                  />
-                </div>
-                <ClockTimeSelector
-                  value={activeTime}
-                  onChange={(time) => updateTime(activeField, time)}
-                  minuteInputLabel={`${activeField === "start" ? "시작" : "종료"} 분 직접 입력`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setEditingField(null)}
-                  className="mt-3 h-10 w-full rounded-[10px] bg-[#f2f2f7] text-[13px] font-semibold text-[#1a1a1a]"
-                >
-                  완료
-                </button>
-              </div>
-            ) : null}
+            <CompactDateTimeField
+              label="시작"
+              date={form.startDate}
+              time={form.startAt || "09:00"}
+              timeLabel="시작 시간 직접 입력"
+              onDateChange={(dateKey) => updateDate("start", dateKey)}
+              onTimeChange={(time) => updateTime("start", time)}
+            />
+            <CompactDateTimeField
+              label="종료"
+              date={form.endDate}
+              time={form.endAt || "18:00"}
+              timeLabel="종료 시간 직접 입력"
+              onDateChange={(dateKey) => updateDate("end", dateKey)}
+              onTimeChange={(time) => updateTime("end", time)}
+            />
           </div>
         ) : null}
       </div>

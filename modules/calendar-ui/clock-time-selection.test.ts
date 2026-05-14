@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   commitClockMinuteDraft,
   commitClockTimeDraft,
+  commitClockWallTimeDraft,
   normalizeClockMinuteDraft,
   normalizeClockTimeDraft,
   toClockTimeParts,
   toClockTimeValue,
+  toClockWallTimeDraft,
 } from "@/modules/calendar-ui/clock-time-selection";
 
 describe("clock time selection", () => {
@@ -50,5 +52,19 @@ describe("clock time selection", () => {
     expect(commitClockTimeDraft("07:37")).toBe("07:37");
     expect(commitClockTimeDraft("25:99")).toBe("23:59");
     expect(commitClockTimeDraft("", "18:30")).toBe("18:30");
+  });
+
+  it("formats 24-hour time as a compact 12-hour draft", () => {
+    expect(toClockWallTimeDraft("00:05")).toBe("12:05");
+    expect(toClockWallTimeDraft("09:30")).toBe("9:30");
+    expect(toClockWallTimeDraft("13:07")).toBe("1:07");
+  });
+
+  it("commits a compact 12-hour draft with the selected period", () => {
+    expect(commitClockWallTimeDraft("7", "AM")).toBe("07:00");
+    expect(commitClockWallTimeDraft("730", "PM")).toBe("19:30");
+    expect(commitClockWallTimeDraft("12:05", "AM")).toBe("00:05");
+    expect(commitClockWallTimeDraft("12:05", "PM")).toBe("12:05");
+    expect(commitClockWallTimeDraft("99:99", "PM")).toBe("12:59");
   });
 });

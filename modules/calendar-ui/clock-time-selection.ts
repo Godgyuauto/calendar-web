@@ -84,3 +84,42 @@ export function commitClockTimeDraft(value: string, fallback = "09:00"): string 
 
   return `${String(normalizedHour).padStart(2, "0")}:${String(normalizedMinute).padStart(2, "0")}`;
 }
+
+export function toClockWallTimeDraft(hhmm: string): string {
+  const parts = toClockTimeParts(hhmm);
+  return `${parts.hour12}:${parts.minute}`;
+}
+
+export function commitClockWallTimeDraft(
+  value: string,
+  period: ClockPeriod,
+  fallback = "09:00",
+): string {
+  const fallbackParts = toClockTimeParts(fallback);
+  const draft = normalizeClockTimeDraft(value).trim();
+  if (!draft) {
+    return toClockTimeValue({ ...fallbackParts, period });
+  }
+
+  const [rawHour, rawMinute] = draft.includes(":")
+    ? draft.split(":", 2)
+    : draft.length <= 2
+      ? [draft, "0"]
+      : draft.length === 3
+        ? [draft.slice(0, 1), draft.slice(1)]
+        : [draft.slice(0, 2), draft.slice(2, 4)];
+  const hour = Number(rawHour);
+  const minute = Number(rawMinute || "0");
+  const normalizedHour = Number.isFinite(hour)
+    ? Math.min(Math.max(Math.floor(hour), 1), 12)
+    : fallbackParts.hour12;
+  const normalizedMinute = Number.isFinite(minute)
+    ? Math.min(Math.max(Math.floor(minute), 0), 59)
+    : Number(fallbackParts.minute);
+
+  return toClockTimeValue({
+    period,
+    hour12: normalizedHour,
+    minute: String(normalizedMinute).padStart(2, "0"),
+  });
+}

@@ -45,16 +45,9 @@ function formatDateTimeSummary(dateKey: string, hhmm: string): string {
   return `${dateKey.slice(5)} ${period} ${hour12}:${minute}`;
 }
 
-function formatRangeSummary(form: StructuredOverrideFormState): string {
-  const start = formatDateTimeSummary(form.startDate, form.startAt || "09:00");
-  const end = formatDateTimeSummary(form.endDate, form.endAt || "18:00");
-  return `${start} - ${end}`;
-}
-
 export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
   const hasTime = form.startAt.length > 0 || form.endAt.length > 0;
-  const [activeField, setActiveField] = useState<TimeField>("start");
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [editingField, setEditingField] = useState<TimeField | null>(null);
 
   const updateDate = (field: TimeField, dateKey: string) => {
     setForm((current) => {
@@ -78,6 +71,7 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
     );
   };
 
+  const activeField = editingField ?? "start";
   const activeDate = activeField === "start" ? form.startDate : form.endDate;
   const activeTime =
     activeField === "start"
@@ -98,7 +92,7 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
                 startAt: "",
                 endAt: "",
               }));
-              setPickerOpen(false);
+              setEditingField(null);
             }}
             variant="segment"
           >
@@ -112,8 +106,7 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
                 startAt: current.startAt || "09:00",
                 endAt: current.endAt || "18:00",
               }));
-              setActiveField("start");
-              setPickerOpen(true);
+              setEditingField(null);
             }}
             variant="segment"
           >
@@ -123,26 +116,34 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
 
         {hasTime ? (
           <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => setPickerOpen((open) => !open)}
-              className="grid min-h-[54px] w-full grid-cols-[48px_minmax(0,1fr)] items-center gap-2 rounded-[10px] bg-[#f2f2f7] px-3 text-left"
-            >
-              <span className="text-[12px] font-semibold text-[#8e8e93]">언제</span>
-              <span className="min-w-0 text-right text-[13px] font-semibold text-[#1a1a1a]">
-                {formatRangeSummary(form)}
-              </span>
-            </button>
+            {(["start", "end"] as const).map((field) => {
+              const label = field === "start" ? "시작" : "종료";
+              const dateKey = field === "start" ? form.startDate : form.endDate;
+              const time = field === "start" ? form.startAt || "09:00" : form.endAt || "18:00";
+              return (
+                <button
+                  key={field}
+                  type="button"
+                  onClick={() => setEditingField(field)}
+                  className="grid min-h-[50px] w-full grid-cols-[44px_minmax(0,1fr)] items-center gap-2 rounded-[10px] bg-[#f2f2f7] px-3 text-left"
+                >
+                  <span className="text-[12px] font-semibold text-[#8e8e93]">{label}</span>
+                  <span className="min-w-0 text-right text-[15px] font-semibold text-[#1a1a1a]">
+                    {formatDateTimeSummary(dateKey, time)}
+                  </span>
+                </button>
+              );
+            })}
 
-            {pickerOpen ? (
+            {editingField ? (
               <div className="rounded-[12px] border border-[#e5e5ea] bg-white p-3">
                 <SegmentControl
                   options={[
                     { value: "start", label: "시작" },
                     { value: "end", label: "종료" },
                   ]}
-                  value={activeField}
-                  onChange={setActiveField}
+                  value={editingField}
+                  onChange={setEditingField}
                   className="mb-3"
                 />
                 <div className="mb-2 grid grid-cols-[44px_minmax(0,1fr)] items-center gap-2">
@@ -161,7 +162,7 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
                 />
                 <button
                   type="button"
-                  onClick={() => setPickerOpen(false)}
+                  onClick={() => setEditingField(null)}
                   className="mt-3 h-10 w-full rounded-[10px] bg-[#f2f2f7] text-[13px] font-semibold text-[#1a1a1a]"
                 >
                   완료

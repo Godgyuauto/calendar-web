@@ -63,7 +63,8 @@ export function AddEventSheet({
       dateKey: defaultDate,
       selectedOverrideId,
     });
-  const formOverride = draftOverride ?? existingOverride;
+  const formOverride =
+    submitMode === "update" ? draftOverride ?? existingOverride : null;
   const formSeed = toStructuredOverrideFormState({
     dateKey: defaultDate,
     override: formOverride ?? undefined,

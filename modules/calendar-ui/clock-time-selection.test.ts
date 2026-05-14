@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   commitClockMinuteDraft,
+  commitClockTimeDraft,
   normalizeClockMinuteDraft,
+  normalizeClockTimeDraft,
   toClockTimeParts,
   toClockTimeValue,
 } from "@/modules/calendar-ui/clock-time-selection";
@@ -33,5 +35,20 @@ describe("clock time selection", () => {
     expect(commitClockMinuteDraft("05")).toBe("05");
     expect(commitClockMinuteDraft("99")).toBe("59");
     expect(commitClockMinuteDraft("")).toBe("00");
+  });
+
+  it("keeps direct time draft editable before commit", () => {
+    expect(normalizeClockTimeDraft("7")).toBe("7");
+    expect(normalizeClockTimeDraft("7:3")).toBe("7:3");
+    expect(normalizeClockTimeDraft("07:37")).toBe("07:37");
+    expect(normalizeClockTimeDraft("ab0737cd")).toBe("0737");
+  });
+
+  it("normalizes direct time draft on commit", () => {
+    expect(commitClockTimeDraft("7")).toBe("07:00");
+    expect(commitClockTimeDraft("730")).toBe("07:30");
+    expect(commitClockTimeDraft("07:37")).toBe("07:37");
+    expect(commitClockTimeDraft("25:99")).toBe("23:59");
+    expect(commitClockTimeDraft("", "18:30")).toBe("18:30");
   });
 });

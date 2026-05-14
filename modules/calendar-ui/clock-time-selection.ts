@@ -57,3 +57,30 @@ export function commitClockMinuteDraft(value: string): string {
 
   return String(Math.min(minute, 59)).padStart(2, "0");
 }
+
+export function normalizeClockTimeDraft(value: string): string {
+  return value.replace(/[^\d:]/g, "").slice(0, 5);
+}
+
+export function commitClockTimeDraft(value: string, fallback = "09:00"): string {
+  const draft = normalizeClockTimeDraft(value).trim();
+  if (!draft) {
+    return TIME_PATTERN.test(fallback) ? fallback : "09:00";
+  }
+
+  const [rawHour, rawMinute] = draft.includes(":")
+    ? draft.split(":", 2)
+    : draft.length <= 2
+      ? [draft, "0"]
+      : draft.length === 3
+        ? [draft.slice(0, 1), draft.slice(1)]
+        : [draft.slice(0, 2), draft.slice(2, 4)];
+  const hour = Number(rawHour);
+  const minute = Number(rawMinute || "0");
+  const normalizedHour = Number.isFinite(hour) ? Math.min(Math.max(Math.floor(hour), 0), 23) : 9;
+  const normalizedMinute = Number.isFinite(minute)
+    ? Math.min(Math.max(Math.floor(minute), 0), 59)
+    : 0;
+
+  return `${String(normalizedHour).padStart(2, "0")}:${String(normalizedMinute).padStart(2, "0")}`;
+}

@@ -5,6 +5,7 @@ import { ClockTimeSelector } from "@/modules/calendar-ui/ClockTimeSelector";
 import type { StructuredOverrideFormState } from "@/modules/calendar-ui/structured-override";
 import {
   Chip,
+  SegmentControl,
   SectionLabel,
   TextField,
 } from "@/modules/ui/components";
@@ -44,9 +45,16 @@ function formatDateTimeSummary(dateKey: string, hhmm: string): string {
   return `${dateKey.slice(5)} ${period} ${hour12}:${minute}`;
 }
 
+function formatRangeSummary(form: StructuredOverrideFormState): string {
+  const start = formatDateTimeSummary(form.startDate, form.startAt || "09:00");
+  const end = formatDateTimeSummary(form.endDate, form.endAt || "18:00");
+  return `${start} - ${end}`;
+}
+
 export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
   const hasTime = form.startAt.length > 0 || form.endAt.length > 0;
   const [activeField, setActiveField] = useState<TimeField>("start");
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const updateDate = (field: TimeField, dateKey: string) => {
     setForm((current) => {
@@ -83,14 +91,15 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
         <div className="flex gap-1.5">
           <Chip
             active={!hasTime}
-            onClick={() =>
+            onClick={() => {
               setForm((current) => ({
                 ...current,
                 endDate: current.startDate,
                 startAt: "",
                 endAt: "",
-              }))
-            }
+              }));
+              setPickerOpen(false);
+            }}
             variant="segment"
           >
             종일
@@ -104,6 +113,7 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
                 endAt: current.endAt || "18:00",
               }));
               setActiveField("start");
+              setPickerOpen(true);
             }}
             variant="segment"
           >
@@ -113,47 +123,51 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
 
         {hasTime ? (
           <div className="space-y-2">
-            <div className="grid gap-2">
-              {(["start", "end"] as const).map((field) => {
-                const label = field === "start" ? "시작" : "종료";
-                const dateKey = field === "start" ? form.startDate : form.endDate;
-                const time = field === "start" ? form.startAt : form.endAt;
-                return (
-                  <button
-                    key={field}
-                    type="button"
-                    onClick={() => setActiveField(field)}
-                    className={`flex min-h-[44px] items-center justify-between rounded-[10px] border px-3 text-left ${
-                      activeField === field
-                        ? "border-[#007AFF] bg-[#eaf3ff]"
-                        : "border-[#e5e5ea] bg-[#f9f9fb]"
-                    }`}
-                  >
-                    <span className="text-[12px] font-semibold text-[#8e8e93]">{label}</span>
-                    <span className="text-[13px] font-semibold text-[#1a1a1a]">
-                      {formatDateTimeSummary(dateKey, time || (field === "start" ? "09:00" : "18:00"))}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            <button
+              type="button"
+              onClick={() => setPickerOpen((open) => !open)}
+              className="grid min-h-[54px] w-full grid-cols-[48px_minmax(0,1fr)] items-center gap-2 rounded-[10px] bg-[#f2f2f7] px-3 text-left"
+            >
+              <span className="text-[12px] font-semibold text-[#8e8e93]">언제</span>
+              <span className="min-w-0 text-right text-[13px] font-semibold text-[#1a1a1a]">
+                {formatRangeSummary(form)}
+              </span>
+            </button>
 
-            <div className="rounded-[12px] border border-[#e5e5ea] bg-white p-3">
-              <div className="mb-2 grid grid-cols-[44px_minmax(0,1fr)] items-center gap-2">
-                <span className="text-[12px] font-semibold text-[#8e8e93]">날짜</span>
-                <TextField
-                  type="date"
-                  value={activeDate}
-                  className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-                  onChange={(event) => updateDate(activeField, event.target.value)}
+            {pickerOpen ? (
+              <div className="rounded-[12px] border border-[#e5e5ea] bg-white p-3">
+                <SegmentControl
+                  options={[
+                    { value: "start", label: "시작" },
+                    { value: "end", label: "종료" },
+                  ]}
+                  value={activeField}
+                  onChange={setActiveField}
+                  className="mb-3"
                 />
+                <div className="mb-2 grid grid-cols-[44px_minmax(0,1fr)] items-center gap-2">
+                  <span className="text-[12px] font-semibold text-[#8e8e93]">날짜</span>
+                  <TextField
+                    type="date"
+                    value={activeDate}
+                    className="min-w-0 px-2 text-center text-[13px] tabular-nums"
+                    onChange={(event) => updateDate(activeField, event.target.value)}
+                  />
+                </div>
+                <ClockTimeSelector
+                  value={activeTime}
+                  onChange={(time) => updateTime(activeField, time)}
+                  minuteInputLabel={`${activeField === "start" ? "시작" : "종료"} 분 직접 입력`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(false)}
+                  className="mt-3 h-10 w-full rounded-[10px] bg-[#f2f2f7] text-[13px] font-semibold text-[#1a1a1a]"
+                >
+                  완료
+                </button>
               </div>
-              <ClockTimeSelector
-                value={activeTime}
-                onChange={(time) => updateTime(activeField, time)}
-                minuteInputLabel={`${activeField === "start" ? "시작" : "종료"} 분 직접 입력`}
-              />
-            </div>
+            ) : null}
           </div>
         ) : null}
       </div>

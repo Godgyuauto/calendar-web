@@ -1,4 +1,6 @@
 // @ts-expect-error Deno requires explicit .ts extension for Supabase Edge Function imports.
+import { normalizeReminderIso, remindersMatch } from "./reminder-guard.ts";
+// @ts-expect-error Deno requires explicit .ts extension for Supabase Edge Function imports.
 import { buildTelegramTextForNotificationJob } from "./telegram-text.ts";
 
 declare const Deno: {
@@ -19,7 +21,6 @@ type NotificationJob = {
 type ShiftOverrideRow = { id: string; note: string | null };
 
 const TIME_ZONE = "Asia/Seoul";
-const DATETIME_LOCAL_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -125,23 +126,6 @@ async function updateJob(
   }
 }
 
-function normalizeReminderIso(raw: string | null | undefined): string | null {
-  if (!raw) {
-    return null;
-  }
-  const value = raw.trim();
-  if (!value) {
-    return null;
-  }
-
-  if (DATETIME_LOCAL_PATTERN.test(value)) {
-    return `${value}:00+09:00`;
-  }
-
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
-}
-
 function extractOverrideIdFromDedupeKey(dedupeKey: string): string | null {
   const match = /^override:([0-9a-f-]{36}):/i.exec(dedupeKey);
   return match?.[1] ?? null;
@@ -202,15 +186,14 @@ async function shouldSendJob(config: Config, job: NotificationJob): Promise<bool
   }
 
   const sourceReminder = readReminderFromOverrideNote(source.note);
-  const jobReminder = normalizeReminderIso(job.remind_at);
-  if (!sourceReminder || !jobReminder) {
+  if (!sourceReminder || !normalizeReminderIso(job.remind_at)) {
     return false;
   }
 
   // Final AND guard before send:
   // 1) override row still exists
   // 2) reminder in source note is still the same schedule as queued job
-  return sourceReminder === jobReminder;
+  return remindersMatch(sourceReminder, job.remind_at);
 }
 
 async function sendTelegram(config: Config, job: NotificationJob): Promise<void> {

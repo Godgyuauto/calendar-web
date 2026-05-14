@@ -56,37 +56,19 @@ export function FamilyInfoSection({
   data: SettingsPageData;
   onCreateInvite: () => void;
 }) {
+  if (!data.canCreateInvite) {
+    return null;
+  }
+
   return (
     <>
-      <SectionLabel>가족 정보</SectionLabel>
+      <SectionLabel>가족 초대</SectionLabel>
       <SettingsGroupCard>
         <SettingsRow
-          label="가족 캘린더 이름"
-          trailing={
-            <>
-              <span className="text-[13px]">{data.familyName}</span>
-              <ChevronRightIcon />
-            </>
-          }
-          onClick={() => {}}
-        />
-        {data.canCreateInvite ? (
-          <SettingsRow
-            label="초대 코드 만들기"
-            description="아내 계정이 이 코드로 같은 가족 캘린더에 참여합니다"
-            trailing={<ChevronRightIcon />}
-            onClick={onCreateInvite}
-          />
-        ) : null}
-        <SettingsRow
-          label="멤버 관리"
-          trailing={
-            <>
-              <span className="text-[13px]">{data.profileName}</span>
-              <ChevronRightIcon />
-            </>
-          }
-          onClick={() => {}}
+          label="초대 코드 만들기"
+          description="아내 계정이 이 코드로 같은 가족 캘린더에 참여합니다"
+          trailing={<ChevronRightIcon />}
+          onClick={onCreateInvite}
           hairline={false}
         />
       </SettingsGroupCard>

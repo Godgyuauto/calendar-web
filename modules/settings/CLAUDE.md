@@ -9,7 +9,6 @@
   세션이 없으면 `ensureAuthenticatedOrRedirect("/")`로 루트 로그인 화면으로 보낸다.
 - `settings-page-data.ts` — family scope read 조립:
   - 현재 사용자 프로필(auth user)
-  - 가족 이름(`families`)
   - 활성 교대 패턴(`shift_patterns`)
   - 본인 푸시 구독 존재 여부(`push_subscriptions`)
 - `push-toggle-controller.ts` — `modules/push` 공용 훅 호환 래퍼.

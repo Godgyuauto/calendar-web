@@ -10,7 +10,6 @@ import {
 import {
   listFamilyMembersFromSupabase,
   readActiveShiftPatternFromSupabase,
-  readFamilyNameFromSupabase,
   readOwnPushSubscriptionExistsFromSupabase,
 } from "@/modules/family/api/members";
 import { readAuthProfileFromSupabase } from "@/modules/family/api/settings";
@@ -34,7 +33,6 @@ export interface SettingsPageData {
   profileRoleLabel: string;
   selfWorking: boolean;
   canCreateInvite: boolean;
-  familyName: string;
   shiftPatternLabel: string;
   shiftPatternSeedDate: string;
   hasPushSubscription: boolean;
@@ -62,7 +60,6 @@ function createDisconnectedData(): SettingsPageData {
     profileRoleLabel: "멤버",
     selfWorking: true,
     canCreateInvite: false,
-    familyName: "가족 정보 없음",
     shiftPatternLabel: formatPatternLabel(
       DEFAULT_SHIFT_PATTERN_V1.patternId,
       DEFAULT_SHIFT_PATTERN_V1.version,
@@ -142,10 +139,9 @@ export async function getSettingsPageData(): Promise<SettingsPageData> {
   }
 
   try {
-    const [profile, familyName, activePattern, hasPushSubscription, members, leaveMetadata] =
+    const [profile, activePattern, hasPushSubscription, members, leaveMetadata] =
       await Promise.all([
         readAuthProfileFromSupabase(auth),
-        readFamilyNameFromSupabase(auth),
         readActiveShiftPatternFromSupabase(auth),
         readOwnPushSubscriptionExistsFromSupabase(auth),
         listFamilyMembersFromSupabase(auth),
@@ -169,7 +165,6 @@ export async function getSettingsPageData(): Promise<SettingsPageData> {
         : "가족원",
       selfWorking: self?.working ?? true,
       canCreateInvite: self?.role === "admin",
-      familyName: familyName ?? "이름 없는 가족",
       shiftPatternLabel: formatPatternLabel(
         resolvedPattern.patternId,
         resolvedPattern.version,

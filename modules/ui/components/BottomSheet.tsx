@@ -37,11 +37,11 @@ export function BottomSheet({ open, onClose, children, ariaLabel }: BottomSheetP
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
-        className="relative w-full max-w-lg rounded-t-[22px] border border-b-0 border-[#e5e5ea] bg-white pb-6 pt-2.5 shadow-[0_-8px_32px_rgba(0,0,0,0.12)]"
+        className="relative flex max-h-[calc(100dvh-24px)] w-full max-w-lg flex-col rounded-t-[22px] border border-b-0 border-[#e5e5ea] bg-white pt-2.5 shadow-[0_-8px_32px_rgba(0,0,0,0.12)]"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
       >
-        <div className="mx-auto mb-3.5 h-1 w-9 rounded-full bg-[#d1d1d6]" />
-        {children}
+        <div className="mx-auto mb-3.5 h-1 w-9 flex-none rounded-full bg-[#d1d1d6]" />
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
       </section>
     </div>
   );

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  normalizeReminderMinuteInput,
+  commitReminderMinuteDraft,
+  normalizeReminderMinuteDraft,
   toReminderTimeParts,
   toReminderTimeValue,
 } from "@/modules/calendar-ui/reminder-time-selection";
@@ -20,11 +21,17 @@ describe("reminder time selection", () => {
     expect(toReminderTimeValue({ period: "PM", hour12: 11, minute: "55" })).toBe("23:55");
   });
 
-  it("normalizes direct minute input", () => {
-    expect(normalizeReminderMinuteInput("7")).toBe("07");
-    expect(normalizeReminderMinuteInput("05")).toBe("05");
-    expect(normalizeReminderMinuteInput("99")).toBe("59");
-    expect(normalizeReminderMinuteInput("ab12cd")).toBe("12");
-    expect(normalizeReminderMinuteInput("")).toBe("00");
+  it("keeps direct minute draft editable before commit", () => {
+    expect(normalizeReminderMinuteDraft("7")).toBe("7");
+    expect(normalizeReminderMinuteDraft("05")).toBe("05");
+    expect(normalizeReminderMinuteDraft("ab12cd")).toBe("12");
+    expect(normalizeReminderMinuteDraft("")).toBe("");
+  });
+
+  it("normalizes direct minute draft on commit", () => {
+    expect(commitReminderMinuteDraft("7")).toBe("07");
+    expect(commitReminderMinuteDraft("05")).toBe("05");
+    expect(commitReminderMinuteDraft("99")).toBe("59");
+    expect(commitReminderMinuteDraft("")).toBe("00");
   });
 });

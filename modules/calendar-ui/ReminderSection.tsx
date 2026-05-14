@@ -1,14 +1,8 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import { ClockTimeSelector } from "@/modules/calendar-ui/ClockTimeSelector";
 import type { StructuredOverrideFormState } from "@/modules/calendar-ui/structured-override";
-import {
-  REMINDER_MINUTE_OPTIONS,
-  normalizeReminderMinuteInput,
-  toReminderTimeParts,
-  toReminderTimeValue,
-  type ReminderTimeParts,
-} from "@/modules/calendar-ui/reminder-time-selection";
 import {
   toDateInputOrDefault,
   toDateTimeFromDateAndTime,
@@ -33,22 +27,17 @@ function toReminderValue(dateKey: string, hhmm: string): string {
   return toDateTimeFromDateAndTime(dateKey, hhmm) ?? "";
 }
 
-const HOUR_OPTIONS = Array.from({ length: 12 }, (_, index) => index + 1);
-
 export function ReminderSection({ form, setForm }: ReminderSectionProps) {
   const hasReminder = form.remindAt.trim().length > 0;
   const reminderDate = toDateInputOrDefault(form.remindAt, form.startDate);
   const reminderTime = toTimeInputOrEmpty(form.remindAt) || fallbackReminderTime(form);
-  const reminderParts = toReminderTimeParts(reminderTime);
 
-  const updateReminderTime = (patch: Partial<ReminderTimeParts>) => {
+  const updateReminderTime = (time: string) => {
     setForm((current) => {
       const currentDate = toDateInputOrDefault(current.remindAt, current.startDate);
-      const currentTime = toTimeInputOrEmpty(current.remindAt) || fallbackReminderTime(current);
-      const nextParts = { ...toReminderTimeParts(currentTime), ...patch };
       return {
         ...current,
-        remindAt: toReminderValue(currentDate, toReminderTimeValue(nextParts)),
+        remindAt: toReminderValue(currentDate, time),
       };
     });
   };
@@ -98,65 +87,11 @@ export function ReminderSection({ form, setForm }: ReminderSectionProps) {
 
             <div className="grid grid-cols-[36px_minmax(0,1fr)] items-start gap-2">
               <span className="pt-2 text-[12px] font-semibold text-[#8e8e93]">시간</span>
-              <div className="space-y-2">
-                <div className="flex gap-1.5">
-                  {(["AM", "PM"] as const).map((period) => (
-                    <Chip
-                      key={period}
-                      active={reminderParts.period === period}
-                      onClick={() => updateReminderTime({ period })}
-                      variant="segment"
-                    >
-                      {period === "AM" ? "오전" : "오후"}
-                    </Chip>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-6 gap-1.5">
-                  {HOUR_OPTIONS.map((hour12) => (
-                    <Chip
-                      key={hour12}
-                      active={reminderParts.hour12 === hour12}
-                      onClick={() => updateReminderTime({ hour12 })}
-                      variant="segment"
-                      className="min-w-0"
-                    >
-                      {hour12}
-                    </Chip>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-6 gap-1.5">
-                  {REMINDER_MINUTE_OPTIONS.map((minute) => (
-                    <Chip
-                      key={minute}
-                      active={reminderParts.minute === minute}
-                      onClick={() => updateReminderTime({ minute })}
-                      variant="segment"
-                      className="min-w-0"
-                    >
-                      {minute}
-                    </Chip>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-2">
-                  <span className="text-[12px] font-semibold text-[#8e8e93]">분 직접</span>
-                  <TextField
-                    type="text"
-                    inputMode="numeric"
-                    value={reminderParts.minute}
-                    aria-label="알림 분 직접 입력"
-                    className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-                    onChange={(event) => {
-                      const minute = normalizeReminderMinuteInput(event.target.value);
-                      if (minute) {
-                        updateReminderTime({ minute });
-                      }
-                    }}
-                  />
-                </div>
-              </div>
+              <ClockTimeSelector
+                value={reminderTime}
+                onChange={updateReminderTime}
+                minuteInputLabel="알림 분 직접 입력"
+              />
             </div>
           </div>
         ) : null}

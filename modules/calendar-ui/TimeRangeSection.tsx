@@ -1,6 +1,7 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { ClockTimeSelector } from "@/modules/calendar-ui/ClockTimeSelector";
 import type { StructuredOverrideFormState } from "@/modules/calendar-ui/structured-override";
 import {
   Chip,
@@ -12,6 +13,8 @@ interface TimeRangeSectionProps {
   form: StructuredOverrideFormState;
   setForm: Dispatch<SetStateAction<StructuredOverrideFormState>>;
 }
+
+type TimeField = "start" | "end";
 
 function nextDateKey(dateKey: string): string {
   const [year, month, day] = dateKey.split("-").map(Number);
@@ -33,8 +36,45 @@ function getEndDateAfterStartDateChange(
   return current.endDate;
 }
 
+function formatDateTimeSummary(dateKey: string, hhmm: string): string {
+  const [hour = "00", minute = "00"] = hhmm.split(":");
+  const hourNumber = Number(hour);
+  const period = hourNumber >= 12 ? "오후" : "오전";
+  const hour12 = hourNumber % 12 || 12;
+  return `${dateKey.slice(5)} ${period} ${hour12}:${minute}`;
+}
+
 export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
   const hasTime = form.startAt.length > 0 || form.endAt.length > 0;
+  const [activeField, setActiveField] = useState<TimeField>("start");
+
+  const updateDate = (field: TimeField, dateKey: string) => {
+    setForm((current) => {
+      if (field === "start") {
+        return {
+          ...current,
+          startDate: dateKey,
+          endDate: getEndDateAfterStartDateChange(current, dateKey),
+        };
+      }
+
+      return { ...current, endDate: dateKey };
+    });
+  };
+
+  const updateTime = (field: TimeField, time: string) => {
+    setForm((current) =>
+      field === "start"
+        ? { ...current, startAt: time }
+        : { ...current, endAt: time },
+    );
+  };
+
+  const activeDate = activeField === "start" ? form.startDate : form.endDate;
+  const activeTime =
+    activeField === "start"
+      ? form.startAt || "09:00"
+      : form.endAt || "18:00";
 
   return (
     <>
@@ -57,13 +97,14 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
           </Chip>
           <Chip
             active={hasTime}
-            onClick={() =>
+            onClick={() => {
               setForm((current) => ({
                 ...current,
                 startAt: current.startAt || "09:00",
                 endAt: current.endAt || "18:00",
-              }))
-            }
+              }));
+              setActiveField("start");
+            }}
             variant="segment"
           >
             시간 지정
@@ -71,52 +112,49 @@ export function TimeRangeSection({ form, setForm }: TimeRangeSectionProps) {
         </div>
 
         {hasTime ? (
-          <>
-            <div className="grid grid-cols-[36px_minmax(124px,1fr)_132px] items-center gap-2">
-              <span className="text-[12px] font-semibold text-[#8e8e93]">시작</span>
-              <TextField
-                type="date"
-                value={form.startDate}
-                className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    startDate: event.target.value,
-                    endDate: getEndDateAfterStartDateChange(current, event.target.value),
-                  }))
-                }
-              />
-              <TextField
-                type="time"
-                value={form.startAt}
-                placeholder="09:00"
-                className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, startAt: event.target.value }))
-                }
+          <div className="space-y-2">
+            <div className="grid gap-2">
+              {(["start", "end"] as const).map((field) => {
+                const label = field === "start" ? "시작" : "종료";
+                const dateKey = field === "start" ? form.startDate : form.endDate;
+                const time = field === "start" ? form.startAt : form.endAt;
+                return (
+                  <button
+                    key={field}
+                    type="button"
+                    onClick={() => setActiveField(field)}
+                    className={`flex min-h-[44px] items-center justify-between rounded-[10px] border px-3 text-left ${
+                      activeField === field
+                        ? "border-[#007AFF] bg-[#eaf3ff]"
+                        : "border-[#e5e5ea] bg-[#f9f9fb]"
+                    }`}
+                  >
+                    <span className="text-[12px] font-semibold text-[#8e8e93]">{label}</span>
+                    <span className="text-[13px] font-semibold text-[#1a1a1a]">
+                      {formatDateTimeSummary(dateKey, time || (field === "start" ? "09:00" : "18:00"))}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="rounded-[12px] border border-[#e5e5ea] bg-white p-3">
+              <div className="mb-2 grid grid-cols-[44px_minmax(0,1fr)] items-center gap-2">
+                <span className="text-[12px] font-semibold text-[#8e8e93]">날짜</span>
+                <TextField
+                  type="date"
+                  value={activeDate}
+                  className="min-w-0 px-2 text-center text-[13px] tabular-nums"
+                  onChange={(event) => updateDate(activeField, event.target.value)}
+                />
+              </div>
+              <ClockTimeSelector
+                value={activeTime}
+                onChange={(time) => updateTime(activeField, time)}
+                minuteInputLabel={`${activeField === "start" ? "시작" : "종료"} 분 직접 입력`}
               />
             </div>
-            <div className="grid grid-cols-[36px_minmax(124px,1fr)_132px] items-center gap-2">
-              <span className="text-[12px] font-semibold text-[#8e8e93]">종료</span>
-              <TextField
-                type="date"
-                value={form.endDate}
-                className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, endDate: event.target.value }))
-                }
-              />
-              <TextField
-                type="time"
-                value={form.endAt}
-                placeholder="18:00"
-                className="min-w-0 px-2 text-center text-[13px] tabular-nums"
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, endAt: event.target.value }))
-                }
-              />
-            </div>
-          </>
+          </div>
         ) : null}
       </div>
     </>
